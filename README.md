@@ -209,7 +209,7 @@ O módulo experimental, os testes e as fixtures da Terabyte foram removidos, ass
 
 ### Home de promoções — S3-1
 
-Inicie o servidor de desenvolvimento com `php -S 127.0.0.1:8080 -t web app/roteador.php` e abra `http://127.0.0.1:8080`. A home consulta `V_PROMOCOES_ATIVAS` no Oracle, exibe preço atual, preço original e desconto, e mostra até 100 ofertas em ordem de maior desconto. O filtro de categoria é aplicado no banco antes desse limite. O roteador aceita tanto `/api/produtos` quanto `/api/produtos.php`.
+Inicie o servidor de desenvolvimento com `php -S 127.0.0.1:8080 -t web app/roteador.php` e abra `http://127.0.0.1:8080`. A home consulta `V_PROMOCOES_ATIVAS` no banco configurado e mostra todas as ofertas disponíveis em ordem de maior desconto, com preço atual e preço original. O filtro de categoria é aplicado no banco. O roteador aceita tanto `/api/produtos` quanto `/api/produtos.php`.
 
 ### Página do produto — S3-2
 

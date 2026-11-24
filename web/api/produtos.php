@@ -21,7 +21,7 @@ try {
         . 'FROM V_PROMOCOES_ATIVAS v JOIN PRODUTO p ON p.ID = v.ID '
         . 'JOIN LOJA l ON l.ID = p.LOJA_ID WHERE l.ATIVA = 1 '
         . ($categoria === '' ? '' : 'AND v.CATEGORIA = :categoria ')
-        . 'ORDER BY v.DESCONTO_PCT DESC, p.ATUALIZADO_EM DESC, p.ID DESC FETCH FIRST 100 ROWS ONLY'
+        . 'ORDER BY v.DESCONTO_PCT DESC, p.ATUALIZADO_EM DESC, p.ID DESC'
     );
     $consulta->execute($categoria === '' ? [] : ['categoria' => $categoria]);
     $produtos = [];
