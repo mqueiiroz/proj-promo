@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+    <title>Promoções | Monitor de Hardware</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/home.css">
+    <script src="/app.js" defer></script>
+</head>
+<body class="home">
+<header class="home-topo">
+    <div class="home-largura home-barra">
+        <a class="home-marca" href="/"><span aria-hidden="true">↘</span>Radar Hardware</a>
+        <nav aria-label="Navegação principal">
+            <a href="/" aria-current="page">Início</a>
+            <a href="/explorar">Explorar ofertas</a>
+            <a href="/favoritos">Favoritos e alertas</a>
+        </nav>
+        <a class="home-botao home-entrar" href="/login">Entrar</a>
+    </div>
+</header>
+<main class="home-largura">
+    <h1 class="sr-only">Promoções de hardware</h1>
+    <section id="destaque" class="home-destaque" aria-label="Oferta em destaque" hidden></section>
+    <section id="ofertas" aria-labelledby="titulo-ofertas">
+        <div class="home-ofertas-topo">
+            <h2 id="titulo-ofertas">Ofertas por componente</h2>
+            <div class="filtros">
+                <label for="categoria" class="sr-only">Categoria</label>
+                <select id="categoria">
+                    <option value="">Todas as categorias</option>
+                    <option value="GPU">Placas de vídeo</option>
+                    <option value="SSD">SSDs</option>
+                    <option value="RAM">Memórias RAM</option>
+                    <option value="CPU">Processadores</option>
+                    <option value="FONTE">Fontes de alimentação</option>
+                    <option value="COOLER">Air coolers</option>
+                    <option value="WATER_COOLER">Water coolers</option>
+                    <option value="GABINETE">Gabinetes</option>
+                    <option value="HD">HDs</option>
+                    <option value="PLACA_MAE">Placas-mãe</option>
+                </select>
+            </div>
+        </div>
+        <div id="estado" class="mensagem" role="status" aria-live="polite">Carregando ofertas…</div>
+        <div id="produtos" class="produtos" aria-label="Promoções de hardware"></div>
+    </section>
+    <noscript><p>Ative o JavaScript para carregar os produtos.</p></noscript>
+</main>
+<footer class="home-largura home-rodape">
+    <span>Radar Hardware</span>
+    <nav aria-label="Informações"><a href="/sobre">Sobre o projeto</a><a href="/privacidade">Privacidade</a></nav>
+</footer>
+</body>
+</html>

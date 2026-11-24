@@ -1,0 +1,5 @@
+SQLAlchemy==2.0.57
+oracledb==4.0.2
+python-dotenv==1.2.4
+psycopg[binary]==3.3.9
+pytest==9.1.1

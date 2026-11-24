@@ -1,0 +1,94 @@
+.paginas { display: flex; flex-direction: column; }
+.paginas main { flex: 1; }
+.paginas main > h1, .painel-topo h1 { margin: 14px 0 24px; font-size: clamp(2rem, 5vw, 2.8rem); }
+.painel-claro, .cartao-conta {
+    background: white;
+    border-radius: 10px;
+    padding: 24px 28px;
+}
+main > .painel-claro { margin-bottom: 24px; }
+.painel-claro h2 { font-size: 1.35rem; line-height: 1.25; }
+.painel-claro > p, .cartao-conta > p, .painel-topo p { color: var(--verde-suave); line-height: 1.55; }
+.painel-claro > p:last-child { margin-bottom: 0; }
+.home :is(a, button).acao-secundaria {
+    background: transparent;
+    color: var(--verde-suave);
+    padding: 0;
+    font-weight: 600;
+    text-align: left;
+}
+.home .acao-secundaria:hover { text-decoration: underline; }
+.cartao-conta { max-width: 580px; min-height: 530px; margin: 16px auto; padding: clamp(24px, 4.6vw, 54px); }
+.cartao-conta h1 { margin: 0 0 30px; }
+.cartao-conta .formulario-painel { max-width: none; gap: 8px; margin-top: 30px; }
+.cartao-conta label { font-weight: 650; font-size: .9rem; }
+.cartao-conta input, .explorar-filtros :is(input, select), .favorito-form input {
+    width: 100%;
+    min-height: 42px;
+    background: var(--fundo);
+    color: var(--verde-escuro);
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: 9px 12px;
+    font: inherit;
+}
+.cartao-conta input:focus, .explorar-filtros :is(input, select):focus, .favorito-form input:focus {
+    outline: 2px solid var(--verde-suave);
+    outline-offset: 2px;
+}
+.cartao-conta .home-botao { margin-top: 18px; }
+.cartao-conta :disabled { cursor: not-allowed; opacity: .65; }
+.conta-indisponivel { border: 0; padding: 0; margin-inline: 0; min-inline-size: 0; }
+.conta-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 20px; }
+
+.explorar-filtros input { background: white; height: 54px; }
+.explorar-seletores { display: grid; grid-template-columns: repeat(4, minmax(0, 220px)); gap: 16px; margin: 18px 0 40px; }
+.explorar-seletores select { background: #dfe6d7; }
+#total-ofertas { margin-bottom: 20px; font-size: 1.4rem; }
+
+.favorito-linha { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 24px; margin: 24px 0; }
+.favorito-form { display: flex; flex-wrap: wrap; gap: 12px; }
+.favorito-form input { width: min(180px, 100%); }
+.controle-favorito { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.controle-favorito span { font-size: .875rem; color: var(--verde-suave); }
+
+.trilha-produto { margin: 0 0 24px; }
+.paginas #detalhes .produto {
+    background: transparent;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+    padding: 8px 0;
+}
+.produto-chip { width: 90px; margin: 8px; }
+.produto-chip span { border-width: 7px; font-size: 1.1rem; }
+.produto-titulo h1 { margin: 0; font-size: clamp(1.55rem, 3.5vw, 2.75rem); overflow-wrap: anywhere; }
+.produto-paineis { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.produto-paineis .historico { margin-top: 0; }
+#oferta-loja { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; }
+#oferta-loja .preco { margin: 4px 0; }
+#oferta-loja :is(.comparacao, .estoque, .desconto) { color: var(--verde-suave); }
+#oferta-loja .estoque { margin-bottom: 0; }
+.produto-paineis .grafico { height: clamp(220px, 28vw, 300px); }
+.produto-paineis .historico :is(td, th) { border-color: #ccd7c9; }
+
+.painel-topo { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.painel-topo h1 { margin-bottom: 8px; }
+.painel-topo p { margin: 0; }
+.home .aviso-coleta { border-left: 4px solid #a63b25; background: #fff2e9; }
+.tabela-gestao { border-radius: 10px; }
+.paginas .tabela-eventos th { background: var(--verde-escuro); color: white; }
+.paginas .tabela-eventos :is(th, td) { padding: 16px; border-color: var(--fundo); }
+.paginas .tabela-eventos td { background: white; }
+.tabela-gestao td:first-child { white-space: normal; min-width: 200px; }
+
+@media (max-width: 700px) {
+    .explorar-seletores { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .favorito-linha, .produto-paineis { grid-template-columns: minmax(0, 1fr); }
+    .paginas #detalhes .produto { grid-template-columns: auto minmax(0, 1fr); gap: 16px; }
+    .controle-favorito { grid-column: 1 / -1; }
+    .produto-chip { width: 60px; }
+    .painel-claro, .paginas .historico { padding: 20px; }
+    .painel-topo { align-items: flex-start; }
+}

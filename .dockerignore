@@ -1,0 +1,10 @@
+*
+!Dockerfile
+!app/
+!app/**
+!web/
+!web/**
+!deploy/
+!deploy/apache.conf
+!deploy/index.php
+**/.env*
