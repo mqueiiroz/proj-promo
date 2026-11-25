@@ -61,7 +61,7 @@ def _bloquear_loja_kabum_ativa(conexao, metadata):
     return loja_id
 
 
-def salvar_produto(conexao, produto: Produto, categoria: str):
+def salvar_produto(conexao, produto: Produto, categoria: str, *, metadata=None, loja_id=None, id_afiliado=None):
     """Insere ou atualiza na transação do chamador, sem commit próprio.
 
     Bloqueia a linha da loja durante a transação para serializar gravações
@@ -76,13 +76,15 @@ def salvar_produto(conexao, produto: Produto, categoria: str):
     if categoria not in CATEGORIAS:
         raise PersistenciaError(f"Categoria inválida. Opções: {', '.join(CATEGORIAS)}.")
     try:
-        url_afiliado = gerar_link_afiliado(produto.url, carregar_id_afiliado())
+        url_afiliado = gerar_link_afiliado(produto.url, carregar_id_afiliado() if id_afiliado is None else id_afiliado)
     except AfiliadoError as erro:
         raise PersistenciaError(str(erro)) from None
-    metadata = MetaData()
+    metadata = MetaData() if metadata is None else metadata
     tabela = Table("produto", metadata, autoload_with=conexao)
     historico = Table("historico_preco", metadata, autoload_with=conexao)
-    loja_id = _bloquear_loja_kabum_ativa(conexao, metadata)
+    lote = loja_id is not None
+    if not lote:
+        loja_id = _bloquear_loja_kabum_ativa(conexao, metadata)
     filtro = (tabela.c.loja_id == loja_id) & (tabela.c.codigo_loja == produto.codigo_loja)
     existente = conexao.execute(
         select(tabela.c.id, tabela.c.preco_atual, tabela.c.preco_original,
@@ -134,13 +136,15 @@ def salvar_produto(conexao, produto: Produto, categoria: str):
                 preco_original=registro["preco_original"], coletado_em=agora,
             ))
     if existente is None:
-        _registrar_evento(conexao, loja_id, "PRODUTO_NOVO", produto_id)
+        _registrar_evento(conexao, loja_id, "PRODUTO_NOVO", produto_id, metadata=metadata)
     else:
         if produto.preco is not None and existente["preco_atual"] is not None and produto.preco != existente["preco_atual"]:
-            _registrar_evento(conexao, loja_id, "PRECO_ALTERADO", produto_id)
+            _registrar_evento(conexao, loja_id, "PRECO_ALTERADO", produto_id, metadata=metadata)
         if existente["disponivel"] in (0, 1) and existente["disponivel"] != int(produto.disponivel):
-            _registrar_evento(conexao, loja_id, "VOLTOU_ESTOQUE" if produto.disponivel else "ESGOTADO", produto_id)
-    _registrar_evento(conexao, loja_id, "COLETA_OK", produto_id, categoria)
+            _registrar_evento(conexao, loja_id, "VOLTOU_ESTOQUE" if produto.disponivel else "ESGOTADO",
+                              produto_id, metadata=metadata)
+    if not lote:
+        _registrar_evento(conexao, loja_id, "COLETA_OK", produto_id, categoria, metadata=metadata)
     return {"id": int(produto_id), "acao": acao}
 
 
@@ -188,7 +192,7 @@ def listar_urls_para_rever(conexao, categoria, codigos_excluidos, limite):
     return list(conexao.execute(consulta).scalars())
 
 
-def _registrar_evento(conexao, loja_id, tipo, produto_id=None, categoria=None):
+def _registrar_evento(conexao, loja_id, tipo, produto_id=None, categoria=None, *, metadata=None):
     mensagens = {
         "PRODUTO_NOVO": "Produto cadastrado.", "PRECO_ALTERADO": "Preço atual alterado.",
         "ESGOTADO": "Produto marcado como indisponível.", "VOLTOU_ESTOQUE": "Disponibilidade restabelecida.",
@@ -197,7 +201,7 @@ def _registrar_evento(conexao, loja_id, tipo, produto_id=None, categoria=None):
     if tipo not in mensagens or categoria is not None and categoria not in CATEGORIAS:
         raise PersistenciaError("Tipo ou categoria de evento inválido.")
     mensagem = mensagens[tipo] + (f" Categoria: {categoria}." if categoria else "")
-    log = Table("log_coleta", MetaData(), autoload_with=conexao)
+    log = Table("log_coleta", MetaData() if metadata is None else metadata, autoload_with=conexao)
     conexao.execute(log.insert().values(loja_id=loja_id, produto_id=produto_id, tipo=tipo,
                                       mensagem=mensagem, criado_em=_agora(conexao)))
 

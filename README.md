@@ -312,3 +312,11 @@ O `Dockerfile` monta o serviço web com Apache, PHP e `pdo_pgsql`, na porta `100
 4. Use `/` para verificar se o Apache está respondendo. No endereço HTTPS, confira a home, `GET /api/produtos.php`, um produto com histórico e o redirecionamento de `/painel` para `/login` sem sessão. Faça login e confirme o atributo `Secure` no cookie `promo_painel`.
 
 O banco de produção deve ser provisionado antes da validação da API. O endereço `onrender.com` permite começar a validação enquanto o domínio próprio está pendente. O coletor agendado fica na S5-5.
+
+### Coletor da Awin na Render (S5-5)
+
+No Cron Job Python existente, configure `AWIN_FEED_URL` com a URL de download da Awin e use `pip install -r requirements.txt` como comando de build. Execute `python -m scraper.awin --sem-gravar` em **Runs → Trigger Run** para conferir a leitura na Render. Também é possível conferir um CSV ou CSV.gz local com `python -m scraper.awin --arquivo CAMINHO`.
+
+Após validar o download, configure no Cron Job as mesmas variáveis `DB_*` do site, com acesso de gravação e permissão para criar a tabela `estado_feed_awin` na primeira carga. Use `python -m scraper.awin` como comando e `*/15 * * * *` como agendamento. O PostgreSQL guarda a versão processada. Se o CSV permanecer igual, o coletor registra a execução e pula a regravação dos produtos.
+
+O importador usa as dez categorias atendidas pelo site e o código do produto na KaBuM!. A disponibilidade vem de `in_stock` nas linhas do feed. Produtos ausentes no arquivo conservam seu último estado conhecido. Se faltar preço anterior, o importador preserva o preço de referência já registrado para produtos existentes. Produtos novos sem referência passam a ter histórico, mas aguardam uma referência válida para aparecer como promoção.
