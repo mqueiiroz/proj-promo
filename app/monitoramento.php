@@ -3,6 +3,13 @@ declare(strict_types=1);
 
 function consultarMonitoramento(PDO $banco, int $paginaEventos = 1): array
 {
+    $consultaAwin = $banco->prepare(
+        "SELECT TO_CHAR(MAX(CRIADO_EM), 'DD/MM/YYYY HH24:MI:SS')
+         FROM LOG_COLETA WHERE TIPO = 'COLETA_OK' AND MENSAGEM = :mensagem"
+    );
+    $consultaAwin->execute(['mensagem' => 'Consulta ao feed Awin concluída.']);
+    $ultimaConsultaAwin = $consultaAwin->fetchColumn();
+
     $lojas = $banco->query(
         "SELECT l.NOME, l.ATIVA, resultado.TIPO,
                 TO_CHAR(resultado.CRIADO_EM, 'DD/MM/YYYY HH24:MI:SS') AS DATA_EVENTO
@@ -35,7 +42,7 @@ function consultarMonitoramento(PDO $banco, int $paginaEventos = 1): array
                 CASE WHEN l.ATIVA = 1 AND v.ID IS NOT NULL
                      THEN TO_CHAR(p.PROMOCAO_DESDE, 'DD/MM/YYYY HH24:MI:SS')
                 END AS PROMOCAO_DESDE,
-                TO_CHAR(p.VISTO_EM, 'DD/MM/YYYY HH24:MI:SS') AS ULTIMA_COLETA,
+                TO_CHAR(p.VISTO_EM, 'DD/MM/YYYY HH24:MI:SS') AS ULTIMA_IMPORTACAO,
                 CASE
                     WHEN l.ATIVA = 0 OR p.DISPONIVEL = 0 THEN 'Indisponível'
                     WHEN v.ID IS NOT NULL THEN 'Ativa'
@@ -52,6 +59,7 @@ function consultarMonitoramento(PDO $banco, int $paginaEventos = 1): array
     return [
         'lojas' => $lojas, 'eventos' => array_slice($eventos, 0, 20), 'ofertas' => $ofertas,
         'maisEventos' => count($eventos) > 20,
+        'ultimaConsultaAwin' => $ultimaConsultaAwin ?: null,
     ];
 }
 

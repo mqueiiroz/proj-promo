@@ -4,6 +4,7 @@
 <?php if ($monitoramento === null): ?>
     <p class="mensagem monitoramento" role="alert">Não foi possível consultar o monitoramento agora. Tente novamente mais tarde.</p>
 <?php else: ?>
+    <p class="monitoramento"><strong>Última consulta bem-sucedida à Awin</strong> <?= escaparMonitoramento($monitoramento['ultimaConsultaAwin'] ?? 'Aguardando registro da próxima execução.') ?></p>
     <?php foreach ($monitoramento['lojas'] as $loja): ?>
         <?php if ($loja['TIPO'] === 'COLETA_FALHA'): ?>
             <p class="mensagem monitoramento aviso-coleta" role="status"><strong>Falha na coleta de <?= escaparMonitoramento($loja['NOME']) ?>.</strong> Os dados anteriores foram preservados nas operações que falharam.</p>
@@ -17,19 +18,18 @@
             <div class="tabela-eventos tabela-gestao" tabindex="0" role="region" aria-labelledby="ofertas-monitoradas">
                 <table aria-labelledby="ofertas-monitoradas">
                     <thead><tr>
-                        <th scope="col">Produto</th><th scope="col">Loja</th><th scope="col">Fonte</th>
+                        <th scope="col">Produto</th><th scope="col">Loja</th>
                         <th scope="col">Cadastrado em</th><th scope="col">Promoção desde</th>
-                        <th scope="col">Última coleta</th><th scope="col">Status</th><th scope="col">Ação</th>
+                        <th scope="col">Última importação</th><th scope="col">Status</th><th scope="col">Ação</th>
                     </tr></thead>
                     <tbody>
                         <?php foreach ($monitoramento['ofertas'] as $oferta): ?>
                             <tr>
                                 <td><?= escaparMonitoramento($oferta['NOME']) ?></td>
                                 <td><?= escaparMonitoramento($oferta['LOJA']) ?></td>
-                                <td>Coleta local</td>
                                 <td><?= escaparMonitoramento($oferta['CADASTRADO_EM'] ?? '—') ?></td>
                                 <td><?= escaparMonitoramento($oferta['PROMOCAO_DESDE'] ?? '—') ?></td>
-                                <td><?= escaparMonitoramento($oferta['ULTIMA_COLETA'] ?? '—') ?></td>
+                                <td><?= escaparMonitoramento($oferta['ULTIMA_IMPORTACAO'] ?? '—') ?></td>
                                 <td><?= escaparMonitoramento($oferta['STATUS']) ?></td>
                                 <td><a class="acao-secundaria" href="/produto.html?id=<?= rawurlencode((string) $oferta['ID']) ?>">Ver detalhes</a></td>
                             </tr>

@@ -192,7 +192,7 @@ def listar_urls_para_rever(conexao, categoria, codigos_excluidos, limite):
     return list(conexao.execute(consulta).scalars())
 
 
-def _registrar_evento(conexao, loja_id, tipo, produto_id=None, categoria=None, *, metadata=None):
+def _registrar_evento(conexao, loja_id, tipo, produto_id=None, categoria=None, *, metadata=None, mensagem=None):
     mensagens = {
         "PRODUTO_NOVO": "Produto cadastrado.", "PRECO_ALTERADO": "Preço atual alterado.",
         "ESGOTADO": "Produto marcado como indisponível.", "VOLTOU_ESTOQUE": "Disponibilidade restabelecida.",
@@ -200,7 +200,7 @@ def _registrar_evento(conexao, loja_id, tipo, produto_id=None, categoria=None, *
     }
     if tipo not in mensagens or categoria is not None and categoria not in CATEGORIAS:
         raise PersistenciaError("Tipo ou categoria de evento inválido.")
-    mensagem = mensagens[tipo] + (f" Categoria: {categoria}." if categoria else "")
+    mensagem = (mensagem or mensagens[tipo]) + (f" Categoria: {categoria}." if categoria else "")
     log = Table("log_coleta", MetaData() if metadata is None else metadata, autoload_with=conexao)
     conexao.execute(log.insert().values(loja_id=loja_id, produto_id=produto_id, tipo=tipo,
                                       mensagem=mensagem, criado_em=_agora(conexao)))

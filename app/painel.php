@@ -99,7 +99,7 @@ abrirPagina($autenticado ? 'Painel administrativo' : 'Entrar', $caminho, [], $au
     <?php endif; ?>
     <?php if ($autenticado): ?>
         <div class="painel-topo">
-            <div><h1>Gestão de ofertas</h1><p>Acompanhe a origem e a última coleta de cada oferta.</p></div>
+            <div><h1>Gestão de ofertas</h1><p>Acompanhe as consultas ao feed e a última importação de cada produto.</p></div>
             <form action="/logout" method="post">
                 <input type="hidden" name="csrf" value="<?= $csrf ?>">
                 <button class="home-botao" type="submit">Sair</button>

@@ -36,6 +36,7 @@ CATEGORIAS_FEED = {
 COLUNAS = {"merchant_product_id", "aw_product_id", "product_name", "merchant_category", "search_price",
            "currency", "in_stock", "merchant_deep_link", "aw_deep_link"}
 MAX_BYTES = 64 * 1024 * 1024
+CONSULTA_CONCLUIDA = "Consulta ao feed Awin concluída."
 
 
 def ler_feed(arquivo=None):
@@ -136,7 +137,7 @@ def importar(engine, produtos, afiliado, versao):
         anterior = banco.execute(text("SELECT versao FROM estado_feed_awin WHERE loja_id = :loja_id"),
                                  {"loja_id": loja_id}).scalar_one_or_none()
         if anterior == versao:
-            _registrar_evento(banco, loja_id, "COLETA_OK", metadata=metadata)
+            _registrar_evento(banco, loja_id, "COLETA_OK", metadata=metadata, mensagem=CONSULTA_CONCLUIDA)
             return 0
         for categoria, produto in produtos:
             salvar_produto(banco, produto, categoria, metadata=metadata, loja_id=loja_id, id_afiliado=afiliado)
@@ -144,7 +145,7 @@ def importar(engine, produtos, afiliado, versao):
             INSERT INTO estado_feed_awin (loja_id, versao) VALUES (:loja_id, :versao)
             ON CONFLICT (loja_id) DO UPDATE SET versao = EXCLUDED.versao
         """), estado)
-        _registrar_evento(banco, loja_id, "COLETA_OK", metadata=metadata)
+        _registrar_evento(banco, loja_id, "COLETA_OK", metadata=metadata, mensagem=CONSULTA_CONCLUIDA)
         return len(produtos)
 
 
