@@ -317,6 +317,14 @@ O banco de produção deve ser provisionado antes da validação da API. O ender
 
 No Cron Job Python existente, configure `AWIN_FEED_URL` com a URL de download da Awin e use `pip install -r requirements.txt` como comando de build. Execute `python -m scraper.awin --sem-gravar` em **Runs → Trigger Run** para conferir a leitura na Render. Também é possível conferir um CSV ou CSV.gz local com `python -m scraper.awin --arquivo CAMINHO`.
 
-Após validar o download, configure no Cron Job as mesmas variáveis `DB_*` do site, com acesso de gravação e permissão para criar a tabela `estado_feed_awin` na primeira carga. Use `python -m scraper.awin` como comando e `*/15 * * * *` como agendamento. O PostgreSQL guarda a versão processada. Se o CSV permanecer igual, o coletor registra a execução e pula a regravação dos produtos.
+Após validar o download, configure no Cron Job as mesmas variáveis `DB_*` do site, com acesso de gravação e permissão para criar a tabela `estado_feed_awin` na primeira carga. Use `python -m scraper.awin` como comando e `*/30 * * * *` como agendamento. O PostgreSQL guarda a versão processada. Se o CSV permanecer igual, o coletor registra a execução e pula a regravação dos produtos.
 
 O importador usa as dez categorias atendidas pelo site e o código do produto na KaBuM!. A disponibilidade vem de `in_stock` nas linhas do feed. Produtos ausentes no arquivo conservam seu último estado conhecido. Se faltar preço anterior, o importador preserva o preço de referência já registrado para produtos existentes. Produtos novos sem referência passam a ter histórico, mas aguardam uma referência válida para aparecer como promoção.
+
+### Backup automático do PostgreSQL (S5-6)
+
+Crie um bucket privado no S3 com **Block Public Access** habilitado. Para o job, use uma credencial AWS dedicada com `s3:PutObject` restrito a `arn:aws:s3:::NOME_DO_BUCKET/postgresql/proj-promo/*`. O job não precisa listar, ler ou apagar objetos.
+
+Na Render, crie um **Cron Job** Docker separado chamado `proj-promo-backup`, na mesma região do PostgreSQL. Selecione a branch `main`, a raiz `deploy/backup`, o caminho `./Dockerfile` e a agenda `0 4 * * *` (meia-noite em Manaus). Cadastre `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `AWS_REGION`, `S3_BUCKET_NAME`, `AWS_ACCESS_KEY_ID` e `AWS_SECRET_ACCESS_KEY` no ambiente do job. Use o hostname interno do PostgreSQL e os dados da conexão direta.
+
+Em **Runs → Trigger Run**, confira `Backup enviado ao S3`, depois verifique o objeto no bucket. Confirme também um disparo automático. Para testar a recuperação desse arquivo, baixe-o com uma conta que tenha acesso de leitura e use `pg_restore --clean --if-exists --exit-on-error --single-transaction --no-owner --no-privileges` em um banco de teste recém-criado. Confira produtos, histórico, ofertas e estado do feed antes de usar uma restauração.
