@@ -63,6 +63,23 @@ function consultarMonitoramento(PDO $banco, int $paginaEventos = 1): array
     ];
 }
 
+function consultarCatalogoPainel(PDO $banco): array
+{
+    $resultado = $banco->query(
+        "SELECT p.ID, p.NOME, p.CATEGORIA, l.NOME AS LOJA,
+                CASE WHEN l.ATIVA = 1 AND v.ID IS NOT NULL THEN 1 ELSE 0 END AS EM_PROMOCAO
+         FROM PRODUTO p
+         JOIN LOJA l ON l.ID = p.LOJA_ID
+         LEFT JOIN V_PROMOCOES_ATIVAS v ON v.ID = p.ID
+         ORDER BY p.CATEGORIA, p.NOME, p.ID"
+    );
+    $categorias = [];
+    foreach ($resultado as $produto) {
+        $categorias[$produto['CATEGORIA']][] = $produto;
+    }
+    return $categorias;
+}
+
 function rotuloEventoColeta(string $tipo): string
 {
     return match ($tipo) {

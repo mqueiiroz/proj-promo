@@ -268,6 +268,7 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
 
     sem_sessao = app.requisitar("/painel")
     assert sem_sessao.status == 303 and sem_sessao.cabecalhos["Location"] == "/login"
+    assert app.requisitar("/painel?secao=produtos").status == 303
     entrar_no_painel(app)
     painel = app.requisitar("/painel")
     assert painel.status == 200 and "Falha na coleta" in painel.texto and "Preço alterado" in painel.texto
@@ -283,6 +284,10 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
     painel = app.requisitar("/painel")
     assert painel.status == 200 and "Coleta concluída" in painel.texto and "Produto esgotado" in painel.texto
     assert "Coleta concluída" in painel.texto.split('id="eventos-recentes"', 1)[0]
+    catalogo = app.requisitar("/painel?secao=produtos")
+    assert catalogo.status == 200 and "SSDs</strong> (2)" in catalogo.texto
+    assert "<td>Em promoção</td>" in catalogo.texto
+    assert "<td>Não está em promoção</td>" in catalogo.texto
 
 
 def test_lote_com_falha_e_sucesso_exibe_aviso_sem_alterar_oferta_anterior(aplicacao, monkeypatch):

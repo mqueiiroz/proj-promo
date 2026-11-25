@@ -76,6 +76,10 @@ main > .painel-claro { margin-bottom: 24px; }
 .painel-topo { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .painel-topo h1 { margin-bottom: 8px; }
 .painel-topo p { margin: 0; }
+.painel-secoes { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+.painel-secoes [aria-current="page"] { font-weight: 700; }
+.catalogo-categoria summary { cursor: pointer; }
+.catalogo-categoria .tabela-eventos { margin-top: 16px; }
 .home .aviso-coleta { border-left: 4px solid #a63b25; background: #fff2e9; }
 .tabela-gestao { border-radius: 10px; }
 .paginas .tabela-eventos th { background: var(--verde-escuro); color: white; }

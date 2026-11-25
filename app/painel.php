@@ -77,17 +77,24 @@ try {
     echo 'O painel está temporariamente indisponível.';
     return;
 }
-$mostrarMonitoramento = $autenticado && $caminho === '/painel';
+$mostrarPainel = $autenticado && $caminho === '/painel';
+$mostrarProdutos = $mostrarPainel && ($_GET['secao'] ?? '') === 'produtos';
 session_write_close();
 $monitoramento = null;
-if ($mostrarMonitoramento) {
+$catalogo = null;
+if ($mostrarPainel) {
     require __DIR__ . '/monitoramento.php';
     $falhaLocal = lerFalhaLocalColeta();
     $paginaEventos = filter_input(INPUT_GET, 'eventos', FILTER_VALIDATE_INT, [
         'options' => ['min_range' => 1, 'max_range' => intdiv(PHP_INT_MAX, 20)],
     ]) ?: 1;
     try {
-        $monitoramento = consultarMonitoramento(conectarBanco(), $paginaEventos);
+        $banco = conectarBanco();
+        if ($mostrarProdutos) {
+            $catalogo = consultarCatalogoPainel($banco);
+        } else {
+            $monitoramento = consultarMonitoramento($banco, $paginaEventos);
+        }
     } catch (Throwable $erro) {
         http_response_code(503);
     }
@@ -99,13 +106,22 @@ abrirPagina($autenticado ? 'Painel administrativo' : 'Entrar', $caminho, [], $au
     <?php endif; ?>
     <?php if ($autenticado): ?>
         <div class="painel-topo">
-            <div><h1>Gestão de ofertas</h1><p>Acompanhe as consultas ao feed e a última importação de cada produto.</p></div>
+            <div>
+                <h1><?= $mostrarProdutos ? 'Produtos' : 'Gestão de ofertas' ?></h1>
+                <?php if (!$mostrarProdutos): ?><p>Acompanhe as consultas ao feed e a última importação de cada produto.</p><?php endif; ?>
+            </div>
             <form action="/logout" method="post">
                 <input type="hidden" name="csrf" value="<?= $csrf ?>">
                 <button class="home-botao" type="submit">Sair</button>
             </form>
         </div>
-        <?php if ($mostrarMonitoramento) require __DIR__ . '/monitoramento-painel.php'; ?>
+        <?php if ($mostrarPainel): ?>
+            <nav class="painel-secoes" aria-label="Seções do painel">
+                <a class="acao-secundaria" href="/painel"<?= !$mostrarProdutos ? ' aria-current="page"' : '' ?>>Gestão de ofertas</a>
+                <a class="acao-secundaria" href="/painel?secao=produtos"<?= $mostrarProdutos ? ' aria-current="page"' : '' ?>>Produtos</a>
+            </nav>
+            <?php require __DIR__ . ($mostrarProdutos ? '/produtos-painel.php' : '/monitoramento-painel.php'); ?>
+        <?php endif; ?>
     <?php else: ?>
         <section class="cartao-conta">
         <h1>Entrar</h1>
