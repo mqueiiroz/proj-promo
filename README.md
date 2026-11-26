@@ -313,6 +313,8 @@ O `Dockerfile` monta o serviço web com Apache, PHP e `pdo_pgsql`, na porta `100
 
 O banco de produção deve ser provisionado antes da validação da API. O endereço `onrender.com` permite começar a validação enquanto o domínio próprio está pendente. O coletor agendado fica na S5-5.
 
+Em bancos existentes, aplique [a migração da visão de ofertas](docs/04_atualizar_view_promocoes.sql) com o usuário proprietário da visão antes de publicar a versão que consulta os novos campos. A vitrine usa o preço original da loja quando disponível. Quando esse campo vem vazio, a vitrine exibe uma queda de preço se o valor atual estiver pelo menos 1% abaixo do menor preço registrado para o produto nos sete dias anteriores à queda. O cálculo usa os registros disponíveis nesse período.
+
 ### Coletor da Awin na Render (S5-5)
 
 No Cron Job Python existente, configure `AWIN_FEED_URL` com a URL de download da Awin e use `pip install -r requirements.txt` como comando de build. Execute `python -m scraper.awin --sem-gravar` em **Runs → Trigger Run** para conferir a leitura na Render. Também é possível conferir um CSV ou CSV.gz local com `python -m scraper.awin --arquivo CAMINHO`.

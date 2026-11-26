@@ -104,9 +104,13 @@ function criarCard(produto, titulo = "h2") {
         elemento("p", `estoque${produto.disponivel ? " disponivel" : ""}`,
             produto.disponivel ? "Disponível na última coleta" : "Indisponível na última coleta")
     );
-    if (produto.preco_original != null && Number.isFinite(Number(produto.preco_original))) {
-        const comparacao = elemento("p", "comparacao", "De ");
-        comparacao.append(elemento("del", "", formatoPreco.format(Number(produto.preco_original))));
+    const referencia = Number(produto.preco_referencia === undefined ? produto.preco_original : produto.preco_referencia);
+    if (Number.isFinite(referencia) && preco > 0 && referencia > preco) {
+        const historico = produto.origem_referencia === "historico";
+        const rotulo = historico ? "Queda de preço · Menor preço nos 7 dias anteriores: "
+            : produto.origem_referencia === "loja" ? "Promoção da loja · De " : "De ";
+        const comparacao = elemento("p", "comparacao", rotulo);
+        comparacao.append(elemento(historico ? "span" : "del", "", formatoPreco.format(referencia)));
         if (Number.isInteger(produto.desconto_pct) && produto.desconto_pct > 0) {
             comparacao.append(elemento("span", "desconto", `−${produto.desconto_pct}%`));
         }

@@ -40,7 +40,7 @@ function consultarMonitoramento(PDO $banco, int $paginaEventos = 1): array
         "SELECT p.ID, p.NOME, l.NOME AS LOJA,
                 TO_CHAR(p.CRIADO_EM, 'DD/MM/YYYY HH24:MI:SS') AS CADASTRADO_EM,
                 CASE WHEN l.ATIVA = 1 AND v.ID IS NOT NULL
-                     THEN TO_CHAR(p.PROMOCAO_DESDE, 'DD/MM/YYYY HH24:MI:SS')
+                     THEN TO_CHAR(v.PROMOCAO_DESDE, 'DD/MM/YYYY HH24:MI:SS')
                 END AS PROMOCAO_DESDE,
                 TO_CHAR(p.VISTO_EM, 'DD/MM/YYYY HH24:MI:SS') AS ULTIMA_IMPORTACAO,
                 CASE

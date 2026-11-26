@@ -16,7 +16,7 @@ if (!in_array($categoria, ['', 'GPU', 'SSD', 'RAM', 'CPU', 'FONTE', 'COOLER', 'W
 try {
     $banco = conectarBanco();
     $consulta = $banco->prepare(
-        'SELECT v.ID, v.NOME, v.LOJA, v.CATEGORIA, v.PRECO_ATUAL, v.PRECO_ORIGINAL, v.DESCONTO_PCT, '
+        'SELECT v.ID, v.NOME, v.LOJA, v.CATEGORIA, v.PRECO_ATUAL, v.PRECO_ORIGINAL, v.DESCONTO_PCT, v.PRECO_REFERENCIA, v.ORIGEM_REFERENCIA, '
         . 'p.URL_ORIGINAL, v.URL_AFILIADO '
         . 'FROM V_PROMOCOES_ATIVAS v JOIN PRODUTO p ON p.ID = v.ID '
         . 'JOIN LOJA l ON l.ID = p.LOJA_ID WHERE l.ATIVA = 1 '
@@ -31,7 +31,9 @@ try {
             'nome' => $linha['NOME'], 'loja' => $linha['LOJA'], 'categoria' => $linha['CATEGORIA'],
             // Texto decimal preserva os centavos no transporte JSON.
             'preco' => $linha['PRECO_ATUAL'] === null ? null : (string) $linha['PRECO_ATUAL'],
-            'preco_original' => (string) $linha['PRECO_ORIGINAL'],
+            'preco_original' => $linha['PRECO_ORIGINAL'] === null ? null : (string) $linha['PRECO_ORIGINAL'],
+            'preco_referencia' => (string) $linha['PRECO_REFERENCIA'],
+            'origem_referencia' => $linha['ORIGEM_REFERENCIA'],
             'desconto_pct' => (int) $linha['DESCONTO_PCT'],
             'disponivel' => true, 'url' => $linha['URL_ORIGINAL'],
             'url_afiliado' => $linha['URL_AFILIADO'],
