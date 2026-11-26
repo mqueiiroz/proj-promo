@@ -213,7 +213,7 @@ Inicie o servidor de desenvolvimento com `php -S 127.0.0.1:8080 -t web app/rotea
 
 ### Página do produto — S3-2
 
-Na home, clique no nome da oferta para abrir `/produto.html?id=<id>`. A página mostra o preço, a disponibilidade na última coleta e o botão **Ver na loja**. Quando houver registros, o histórico aparece em um gráfico Chart.js e em uma tabela de datas e preços.
+Na home, clique no nome da oferta para abrir `/produto/<id>/<nome-do-produto>`. Links antigos com `/produto.html?id=<id>` redirecionam para o endereço atual. A página mostra o preço, a disponibilidade na última coleta e o botão **Ver na loja**. Quando houver registros, o histórico aparece em um gráfico Chart.js e em uma tabela de datas e preços.
 
 ### Login do painel — S3-3
 

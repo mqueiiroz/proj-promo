@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const path = require("node:path");
 const vm = require("node:vm");
 
 function elemento(tag) {
@@ -13,9 +14,11 @@ function elemento(tag) {
 }
 
 const { dados, esperado, detalhe } = JSON.parse(fs.readFileSync(0, "utf8"));
-const elementos = Object.fromEntries(["estado", "produtos", "destaque", "categoria"]
+const elementos = Object.fromEntries(["estado", "produtos", "destaque", "categoria", "busca", "ordem", "total-ofertas"]
     .map(id => [id, elemento(id)]));
 elementos.categoria.value = "";
+elementos.busca.value = "";
+elementos.ordem.value = "";
 const contexto = vm.createContext({
     URL, Intl, AbortSignal, AbortController,
     document: { createElement: elemento, getElementById: id => elementos[id] },
@@ -25,6 +28,7 @@ const contexto = vm.createContext({
     },
 });
 vm.runInContext(fs.readFileSync(process.argv[2], "utf8"), contexto);
+vm.runInContext(fs.readFileSync(path.join(path.dirname(process.argv[2]), "explorar.js"), "utf8"), contexto);
 async function verificar() {
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(elementos.produtos.children.length, dados.produtos.length);
@@ -34,7 +38,7 @@ async function verificar() {
         return;
     }
     const [card] = elementos.produtos.children;
-    assert.equal(card.children[1].children[0].href, "/produto.html?id=" + esperado.id);
+    assert.equal(card.children[1].children[0].href, dados.produtos[0].url_detalhes);
     const preco = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
     assert.equal(card.children[2].textContent, preco.format(esperado.preco));
     const loja = card.children.find(filho => filho.tag === "a");
@@ -48,7 +52,7 @@ async function verificar() {
     const graficos = [];
     const contextoProduto = vm.createContext({
         URL, Intl, AbortSignal,
-        window: { location: { href: "http://localhost/produto.html?id=" + esperado.id } },
+        window: { location: { href: "http://localhost" + dados.produtos[0].url_detalhes } },
         document: {
             createElement: elemento,
             getElementById: id => detalhes[id],

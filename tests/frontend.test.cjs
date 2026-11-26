@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const codigo = fs.readFileSync(path.join(__dirname, '../web/app.js'), 'utf8');
+const codigoExplorar = fs.readFileSync(path.join(__dirname, '../web/explorar.js'), 'utf8');
 const codigoProduto = fs.readFileSync(path.join(__dirname, '../web/produto.js'), 'utf8');
 
 // DOM mínimo para testar o comportamento do frontend sem dependências externas.
@@ -21,6 +22,9 @@ async function executar(resposta, falha = false, consultar) {
     const estado = node();
     const produtos = node();
     const destaque = node();
+    const busca = { value: '', addEventListener(_evento, callback) { this.alterar = callback; } };
+    const ordem = { ...busca };
+    const total = node();
     const categoria = {
         value: '',
         addEventListener(evento, callback) {
@@ -30,7 +34,7 @@ async function executar(resposta, falha = false, consultar) {
     };
     const contexto = vm.createContext({
         URL, Intl, AbortSignal, AbortController,
-        document: { createElement: node, getElementById: id => ({ estado, produtos, categoria, destaque })[id] },
+        document: { createElement: node, getElementById: id => ({ estado, produtos, categoria, destaque, busca, ordem, 'total-ofertas': total })[id] },
         fetch: async (url, opcoes) => {
             if (consultar) return consultar(url, opcoes);
             assert.equal(url, '/api/produtos.php');
@@ -39,9 +43,25 @@ async function executar(resposta, falha = false, consultar) {
         },
     });
     vm.runInContext(codigo, contexto);
+    vm.runInContext(codigoExplorar, contexto);
     await new Promise(resolve => setImmediate(resolve));
-    return { estado, produtos, categoria, destaque, contexto };
+    return { estado, produtos, categoria, destaque, contexto, busca, ordem, total };
 }
+
+test('a home busca sem acentos e ordena o resultado por preço', async () => {
+    const { produtos, busca, ordem, total } = await executar({ produtos: [
+        { nome: 'Memória RAM A', preco: '200' },
+        { nome: 'SSD', preco: '80' },
+        { nome: 'Memória RAM B', preco: '100' },
+    ] });
+    busca.value = 'memoria';
+    busca.alterar();
+    ordem.value = 'menor';
+    ordem.alterar();
+    assert.deepEqual(Array.from(produtos.children, card => card.children[1].textContent),
+        ['Memória RAM B', 'Memória RAM A']);
+    assert.equal(total.textContent, '2 ofertas');
+});
 
 test('renderiza produto como texto e mantém os centavos', async () => {
     const { estado, produtos, contexto } = await executar({ produtos: [{
@@ -133,14 +153,16 @@ test('links de afiliado inválidos usam a URL original segura', async () => {
 test('o título do card abre a página do produto', async () => {
     const { produtos } = await executar({ produtos: [{
         id: '42', nome: 'GPU de teste', loja: 'Kabum', categoria: 'GPU',
+        url_detalhes: '/produto/42/gpu-de-teste',
         preco: '200.00', disponivel: true,
     }] });
-    assert.equal(produtos.children[0].children[1].children[0].href, '/produto.html?id=42');
+    assert.equal(produtos.children[0].children[1].children[0].href, '/produto/42/gpu-de-teste');
 });
 
 test('o destaque usa a primeira oferta da API com os links reais de detalhes e loja', async () => {
     const url = 'https://www.kabum.com.br/produto/42';
-    const oferta = { id: '42', nome: 'SSD de teste', categoria: 'SSD', preco: '250.15', url };
+    const oferta = { id: '42', nome: 'SSD de teste', categoria: 'SSD', preco: '250.15', url,
+        url_detalhes: '/produto/42/ssd-de-teste' };
     const { destaque, produtos } = await executar({ produtos: [
         oferta, { ...oferta, id: '43', nome: 'Segunda oferta' },
     ] });
@@ -148,7 +170,7 @@ test('o destaque usa a primeira oferta da API com os links reais de detalhes e l
     assert.equal(destaque.hidden, false);
     assert.equal(texto.children[1].textContent, oferta.nome);
     assert.match(texto.children[2].textContent, /250,15/);
-    assert.equal(texto.children[3].children[0].href, '/produto.html?id=42');
+    assert.equal(texto.children[3].children[0].href, '/produto/42/ssd-de-teste');
     assert.equal(texto.children[3].children[1].href, url);
     assert.equal(produtos.children.length, 2);
 });
@@ -162,7 +184,7 @@ async function executarDetalhe(historico) {
     const graficos = [];
     const contexto = vm.createContext({
         URL, Intl, AbortSignal,
-        window: { location: { href: 'http://localhost/produto.html?id=42' } },
+        window: { location: { href: 'http://localhost/produto/42/ssd-de-teste' } },
         document: {
             getElementById: id => elementos[id],
             createElement: node,

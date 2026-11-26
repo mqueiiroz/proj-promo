@@ -31,7 +31,7 @@
                                 <td><?= escaparMonitoramento($oferta['PROMOCAO_DESDE'] ?? '—') ?></td>
                                 <td><?= escaparMonitoramento($oferta['ULTIMA_IMPORTACAO'] ?? '—') ?></td>
                                 <td><?= escaparMonitoramento($oferta['STATUS']) ?></td>
-                                <td><a class="acao-secundaria" href="/produto.html?id=<?= rawurlencode((string) $oferta['ID']) ?>">Ver detalhes</a></td>
+                                <td><a class="acao-secundaria" href="<?= urlProduto((string) $oferta['ID'], $oferta['NOME']) ?>">Ver detalhes</a></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

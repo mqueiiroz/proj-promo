@@ -6,12 +6,12 @@ $titulos = [
     '/explorar' => 'Explorar ofertas', '/favoritos' => 'Favoritos e alertas',
     '/sobre' => 'Sobre o projeto', '/privacidade' => 'Privacidade',
     '/criar-conta' => 'Criar conta', '/recuperar-senha' => 'Recuperar senha',
-    '/produto.html' => 'Detalhes do produto',
+    '/produto' => $nomeProduto ?? 'Detalhes do produto',
 ];
 $scripts = match ($caminho) {
     '/explorar' => ['/app.js', '/explorar.js'],
     '/favoritos' => ['/app.js', '/favoritos.js'],
-    '/produto.html' => ['/app.js', '/vendor/chart.umd.min.js', '/favoritos.js', '/produto.js'],
+    '/produto' => ['/app.js', '/vendor/chart.umd.min.js', '/favoritos.js', '/produto.js'],
     default => [],
 };
 abrirPagina($titulos[$caminho], $caminho, $scripts);
@@ -59,7 +59,7 @@ abrirPagina($titulos[$caminho], $caminho, $scripts);
         <h2>Preferências de alerta</h2>
         <p>Favoritos e preços-alvo ficam neste navegador. Você pode removê-los na tela de favoritos ou limpar os dados do site no navegador.</p>
     </section>
-<?php elseif ($caminho === '/produto.html'): ?>
+<?php elseif ($caminho === '/produto'): ?>
     <?php require __DIR__ . '/detalhes-pagina.php'; ?>
 <?php else: ?>
     <section class="cartao-conta">

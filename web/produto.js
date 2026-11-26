@@ -116,7 +116,8 @@ function organizarDetalhes(card, produto, id) {
 
 async function carregarProduto() {
     const estado = document.getElementById("estado-produto");
-    const id = new URL(window.location.href).searchParams.get("id");
+    const caminho = new URL(window.location.href).pathname;
+    const id = caminho.match(/^\/produto\/([1-9][0-9]{0,37})\/[a-z0-9-]+$/)?.[1];
     if (!/^[1-9][0-9]{0,37}$/.test(id)) {
         estado.textContent = "Selecione um produto na página de promoções.";
         return;

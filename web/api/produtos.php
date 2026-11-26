@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/app/api.php';
+require_once dirname(__DIR__, 2) . '/app/produto-url.php';
 if (!prepararApiGet()) {
     return;
 }
@@ -28,6 +29,7 @@ try {
     foreach ($consulta as $linha) {
         $produtos[] = [
             'id' => (string) $linha['ID'],
+            'url_detalhes' => urlProduto((string) $linha['ID'], $linha['NOME']),
             'nome' => $linha['NOME'], 'loja' => $linha['LOJA'], 'categoria' => $linha['CATEGORIA'],
             // Texto decimal preserva os centavos no transporte JSON.
             'preco' => $linha['PRECO_ATUAL'] === null ? null : (string) $linha['PRECO_ATUAL'],

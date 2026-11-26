@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/home.css">
     <script src="/app.js" defer></script>
+    <script src="/explorar.js" defer></script>
 </head>
 <body class="home">
 <header class="home-topo">
@@ -28,6 +29,8 @@
         <div class="home-ofertas-topo">
             <h2 id="titulo-ofertas">Ofertas por componente</h2>
             <div class="filtros">
+                <label for="busca" class="sr-only">Buscar por produto ou modelo</label>
+                <input id="busca" type="search" placeholder="Buscar por produto ou modelo…">
                 <label for="categoria" class="sr-only">Categoria</label>
                 <select id="categoria">
                     <option value="">Todas as categorias</option>
@@ -42,8 +45,15 @@
                     <option value="HD">HDs</option>
                     <option value="PLACA_MAE">Placas-mãe</option>
                 </select>
+                <label for="ordem" class="sr-only">Ordenar ofertas</label>
+                <select id="ordem">
+                    <option value="">Maior desconto</option>
+                    <option value="menor">Menor preço</option>
+                    <option value="maior">Maior preço</option>
+                </select>
             </div>
         </div>
+        <p id="total-ofertas" class="sr-only" aria-live="polite"></p>
         <div id="estado" class="mensagem" role="status" aria-live="polite">Carregando ofertas…</div>
         <div id="produtos" class="produtos" aria-label="Promoções de hardware"></div>
     </section>

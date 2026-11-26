@@ -20,7 +20,7 @@ $nomesCategorias = [
                     <tbody>
                         <?php foreach ($produtos as $produto): ?>
                             <tr>
-                                <td><a class="acao-secundaria" href="/produto.html?id=<?= rawurlencode((string) $produto['ID']) ?>"><?= escaparMonitoramento($produto['NOME']) ?></a></td>
+                                <td><a class="acao-secundaria" href="<?= urlProduto((string) $produto['ID'], $produto['NOME']) ?>"><?= escaparMonitoramento($produto['NOME']) ?></a></td>
                                 <td><?= escaparMonitoramento($produto['LOJA']) ?></td>
                                 <td><?= (int) $produto['EM_PROMOCAO'] === 1 ? 'Em promoção' : 'Não está em promoção' ?></td>
                             </tr>

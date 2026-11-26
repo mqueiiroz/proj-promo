@@ -54,6 +54,14 @@ function linkDaLoja(produto, texto, classe = "") {
 const nomesCategorias = { CPU: "Processador", GPU: "Placa de vídeo", SSD: "SSD", RAM: "Memória RAM",
     FONTE: "Fonte de alimentação", COOLER: "Air cooler", WATER_COOLER: "Water cooler", GABINETE: "Gabinete", HD: "HD", PLACA_MAE: "Placa-mãe" };
 
+function caminhoDetalhes(produto) {
+    if (!/^[1-9][0-9]{0,37}$/.test(produto.id)) return null;
+    const base = `/produto/${produto.id}`;
+    const caminho = produto.url_detalhes;
+    return typeof caminho === "string" && caminho.startsWith(base + "/")
+        && /^[a-z0-9-]+$/.test(caminho.slice(base.length + 1)) ? caminho : base;
+}
+
 function renderizarDestaque(area, produto) {
     if (!area) return;
     area.replaceChildren();
@@ -69,9 +77,10 @@ function renderizarDestaque(area, produto) {
             ? "Preço não informado" : formatoPreco.format(Number(produto.preco))),
     );
     const acoes = elemento("div", "home-destaque-acoes", "");
-    if (/^[1-9][0-9]{0,37}$/.test(produto.id)) {
+    const caminho = caminhoDetalhes(produto);
+    if (caminho) {
         const detalhes = elemento("a", "home-botao", "Ver detalhes →");
-        detalhes.href = `/produto.html?id=${produto.id}`;
+        detalhes.href = caminho;
         acoes.append(detalhes);
     }
     const loja = linkDaLoja(produto, "Ver na loja ↗", "home-destaque-loja");
@@ -90,9 +99,10 @@ function criarCard(produto, titulo = "h2") {
     const card = elemento("article", "produto", "");
     const preco = produto.preco === null ? null : Number(produto.preco);
     const nome = elemento(titulo, "", produto.nome);
-    if (titulo === "h2" && /^[1-9][0-9]{0,37}$/.test(produto.id)) {
+    const caminho = caminhoDetalhes(produto);
+    if (titulo === "h2" && caminho) {
         const detalhes = elemento("a", "link-detalhes", produto.nome);
-        detalhes.href = `/produto.html?id=${produto.id}`;
+        detalhes.href = caminho;
         nome.textContent = "";
         nome.append(detalhes);
     }
@@ -174,7 +184,3 @@ async function carregarProdutos(categoria = "") {
 }
 
 const filtroCategoria = document.getElementById("categoria");
-if (filtroCategoria && document.getElementById("destaque")) {
-    filtroCategoria.addEventListener("change", () => carregarProdutos(filtroCategoria.value));
-    carregarProdutos(filtroCategoria.value);
-}

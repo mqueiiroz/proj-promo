@@ -12,10 +12,10 @@ function textoParaBusca(texto) {
 
 function mostrarExploracao() {
     const busca = textoParaBusca(buscaOfertas.value.trim());
-    const teto = filtroFaixa.value ? Number(filtroFaixa.value) : Infinity;
+    const teto = filtroFaixa?.value ? Number(filtroFaixa.value) : Infinity;
     const lista = ofertasExploracao.filter(produto =>
         textoParaBusca(produto.nome).includes(busca)
-        && (!filtroLoja.value || produto.loja === filtroLoja.value)
+        && (!filtroLoja?.value || produto.loja === filtroLoja.value)
         && Number(produto.preco) <= teto
     );
     if (filtroOrdem.value) {
@@ -32,22 +32,24 @@ function mostrarExploracao() {
 
 function atualizarExploracao(produtos) {
     ofertasExploracao = produtos;
-    const selecionada = filtroLoja.value;
-    const lojas = [...new Set(produtos.map(produto => produto.loja))].sort();
-    filtroLoja.replaceChildren(...["", ...lojas].map(nome => {
-        const opcao = elemento("option", "", nome || "Loja");
-        opcao.value = nome;
-        return opcao;
-    }));
-    filtroLoja.value = lojas.includes(selecionada) ? selecionada : "";
+    if (filtroLoja) {
+        const selecionada = filtroLoja.value;
+        const lojas = [...new Set(produtos.map(produto => produto.loja))].sort();
+        filtroLoja.replaceChildren(...["", ...lojas].map(nome => {
+            const opcao = elemento("option", "", nome || "Loja");
+            opcao.value = nome;
+            return opcao;
+        }));
+        filtroLoja.value = lojas.includes(selecionada) ? selecionada : "";
+    }
     mostrarExploracao();
 }
 
 buscaOfertas.addEventListener("input", mostrarExploracao);
-[filtroLoja, filtroFaixa, filtroOrdem].forEach(filtro => filtro.addEventListener("change", mostrarExploracao));
+[filtroLoja, filtroFaixa, filtroOrdem].forEach(filtro => filtro?.addEventListener("change", mostrarExploracao));
 filtroCategoria.addEventListener("change", () => {
     ofertasExploracao = [];
     mostrarExploracao();
-    carregarProdutos(filtroCategoria.value);
+    return carregarProdutos(filtroCategoria.value);
 });
 carregarProdutos(filtroCategoria.value);

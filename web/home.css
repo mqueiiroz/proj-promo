@@ -146,7 +146,9 @@
 
 .home-ofertas-topo { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; margin-bottom: 20px; }
 .home-ofertas-topo h2 { font-size: clamp(1.45rem, 3vw, 2rem); line-height: 1.2; letter-spacing: -.02em; }
-.home .filtros select { background: white; color: var(--verde-escuro); border-color: #a5b4a6; }
+.home .filtros select, .home .filtros input { background: white; color: var(--verde-escuro); border-color: #a5b4a6; }
+.home .filtros input { flex: 1 1 100%; min-width: 0; font: inherit; border: 1px solid #a5b4a6; border-radius: 8px; padding: 8px 12px; }
+.home .filtros :is(input, select):focus-visible { outline: 3px solid var(--verde-escuro); outline-offset: 3px; }
 .home .produtos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .home .produto, .home .mensagem {
     background: white;

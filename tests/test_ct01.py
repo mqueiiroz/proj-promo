@@ -274,10 +274,18 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
     assert (afiliado.scheme, afiliado.netloc, afiliado.path) == ("https", "www.awin1.com", "/cread.php")
     assert parse_qs(afiliado.query) == {"awinaffid": ["0"], "awinmid": ["17729"], "ued": [url]}
 
-    assert app.requisitar(f"/produto.html?id={id_produto}").status == 200
+    url_detalhes = destaque["url_detalhes"]
+    assert re.fullmatch(rf"/produto/{id_produto}/[a-z0-9-]+", url_detalhes)
+    for rota_antiga in (f"/produto.html?id={id_produto}", f"/produto/{id_produto}/nome-antigo"):
+        redirecionamento = app.requisitar(rota_antiga)
+        assert redirecionamento.status == 302, redirecionamento.texto
+        assert redirecionamento.cabecalhos["Location"] == url_detalhes
+    assert app.requisitar(url_detalhes).status == 200
+    assert app.requisitar("/produto/999999/oferta-inexistente").status == 404
     resposta = app.requisitar(f"/api/produto.php?id={id_produto}")
     assert resposta.status == 200
     detalhe = resposta.json()
+    assert detalhe["produto"]["url_detalhes"] == url_detalhes
     assert [Decimal(ponto["preco"]) for ponto in detalhe["historico"]] == [2399, 1899]
     app.renderizar(lista.json(), {"id": str(id_produto), "preco": 1899, "afiliado": destaque["url_afiliado"]}, detalhe)
 
