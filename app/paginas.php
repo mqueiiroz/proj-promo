@@ -49,6 +49,10 @@ abrirPagina($titulos[$caminho], $caminho, $scripts);
         <h2>Como ler o histórico</h2>
         <p>O gráfico mostra os preços registrados e a data de cada mudança. A tabela abaixo dele detalha os valores e horários.</p>
     </section>
+    <section class="painel-claro">
+        <h2>Links de afiliado</h2>
+        <p>Alguns links do Radar Hardware são links de afiliado. Se você comprar por um deles, podemos receber uma comissão.</p>
+    </section>
 <?php elseif ($caminho === '/privacidade'): ?>
     <h1>Privacidade</h1>
     <section class="painel-claro">
