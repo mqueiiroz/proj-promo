@@ -1,4 +1,4 @@
-"""Copia um snapshot do Oracle para o PostgreSQL local inicializado pela S5-2."""
+"""Copia um snapshot para um PostgreSQL com o esquema inicial do projeto."""
 
 from getpass import getpass
 
@@ -12,8 +12,12 @@ TABELAS = ("loja", "produto", "historico_preco", "log_coleta", "usuario")
 
 
 def migrar(origem, destino):
-    with origem.connect() as oracle, destino.begin() as postgres:
-        oracle.exec_driver_sql("SET TRANSACTION READ ONLY")
+    esquema_origem = "public" if origem.dialect.name == "postgresql" else None
+    with origem.connect() as fonte, destino.begin() as postgres:
+        if esquema_origem == "public":
+            fonte.exec_driver_sql("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        else:
+            fonte.exec_driver_sql("SET TRANSACTION READ ONLY")
         postgres.exec_driver_sql("SET LOCAL TIME ZONE 'America/Manaus'")
         postgres.exec_driver_sql("SET LOCAL lock_timeout = '5s'")
         postgres.exec_driver_sql(
@@ -33,17 +37,17 @@ def migrar(origem, destino):
                 raise ValueError(f"A tabela {nome} já tem dados. Carga cancelada.")
         postgres.execute(loja.delete())
         contagens = {}
-        metadata_oracle = MetaData()
+        metadata_origem = MetaData()
         for nome, tabela in tabelas.items():
-            original = Table(nome, metadata_oracle, autoload_with=oracle)
+            original = Table(nome, metadata_origem, schema=esquema_origem, autoload_with=fonte)
             colunas = [original.c[coluna.name] for coluna in tabela.columns]
-            linhas = oracle.execute(select(*colunas).order_by(original.c.id)).mappings().all()
+            linhas = fonte.execute(select(*colunas).order_by(original.c.id)).mappings().all()
             for inicio in range(0, len(linhas), 500):
                 lote = linhas[inicio:inicio + 500]
                 postgres.execute(tabela.insert(), [dict(linha) for linha in lote])
             copiadas = postgres.execute(select(tabela).order_by(tabela.c.id)).mappings().all()
             if copiadas != linhas:
-                raise ValueError(f"Os dados copiados de {nome} divergem do Oracle.")
+                raise ValueError(f"Os dados copiados de {nome} divergem da origem.")
             proximo_id = max(0, int(linhas[-1]["id"]) if linhas else 0) + 1
             postgres.exec_driver_sql(f"ALTER TABLE public.{nome} ALTER COLUMN id RESTART WITH {proximo_id}")
             contagens[nome] = len(linhas)
