@@ -17,3 +17,10 @@ function prepararApiGet(): bool
     echo json_encode(['erro' => 'Método não permitido.'], JSON_UNESCAPED_UNICODE);
     return false;
 }
+
+function responderApiPublica(array $dados): void
+{
+    $json = json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    header('Cache-Control: public, max-age=300, must-revalidate');
+    echo $json;
+}

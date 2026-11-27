@@ -267,6 +267,13 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
     coletar_fixture(app, 2199, codigo="621163")
     lista = app.requisitar("/api/produtos.php?categoria=SSD")
     assert lista.status == 200
+    assert lista.cabecalhos["Cache-Control"] == "public, max-age=300, must-revalidate"
+    for rota in ("/", "/explorar"):
+        assert app.requisitar(rota).cabecalhos["Cache-Control"] == "public, max-age=300, must-revalidate"
+    for rota in ("/sobre", "/privacidade"):
+        assert app.requisitar(rota).cabecalhos["Cache-Control"] == "public, max-age=3600, must-revalidate"
+    for rota in ("/favoritos", "/criar-conta", "/recuperar-senha", "/api/produtos.php?categoria=invalida"):
+        assert app.requisitar(rota).cabecalhos["Cache-Control"] == "no-store"
     ofertas = lista.json()["produtos"]
     destaque, concorrente = ofertas
     assert destaque["id"] == str(id_produto)
@@ -283,6 +290,7 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
         assert redirecionamento.cabecalhos["Location"] == url_detalhes
     pagina_produto = app.requisitar(url_detalhes)
     assert pagina_produto.status == 200
+    assert pagina_produto.cabecalhos["Cache-Control"] == "public, max-age=300, must-revalidate"
     imagem = app.consultar(f"SELECT IMAGEM_URL FROM PRODUTO WHERE ID = {int(id_produto)}")[0][0]
     assert f'<meta property="og:image" content="{imagem}">' in pagina_produto.texto
     dados_produto = json.loads(re.search(
@@ -294,9 +302,12 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
     assert Decimal(dados_produto["offers"]["price"]) == Decimal("1899.00")
     assert dados_produto["offers"]["priceCurrency"] == "BRL"
     assert dados_produto["offers"]["availability"] == "https://schema.org/InStock"
-    assert app.requisitar("/produto/999999/oferta-inexistente").status == 404
+    inexistente = app.requisitar("/produto/999999/oferta-inexistente")
+    assert inexistente.status == 404
+    assert inexistente.cabecalhos["Cache-Control"] == "no-store"
     resposta = app.requisitar(f"/api/produto.php?id={id_produto}")
     assert resposta.status == 200
+    assert resposta.cabecalhos["Cache-Control"] == "public, max-age=300, must-revalidate"
     detalhe = resposta.json()
     assert detalhe["produto"]["url_detalhes"] == url_detalhes
     assert [Decimal(ponto["preco"]) for ponto in detalhe["historico"]] == [2399, 1899]
@@ -314,6 +325,7 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
 
     sem_sessao = app.requisitar("/painel")
     assert sem_sessao.status == 303 and sem_sessao.cabecalhos["Location"] == "/login"
+    assert "no-store" in sem_sessao.cabecalhos["Cache-Control"]
     assert app.requisitar("/painel?secao=produtos").status == 303
     entrar_no_painel(app)
     painel = app.requisitar("/painel")

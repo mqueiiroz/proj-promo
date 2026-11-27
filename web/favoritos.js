@@ -66,7 +66,7 @@ async function carregarFavoritos(lista) {
             let produto;
             try {
                 const resposta = await fetch(`/api/produto.php?id=${id}`, {
-                    cache: "no-store", signal: AbortSignal.timeout(15000),
+                    signal: AbortSignal.timeout(15000),
                 });
                 if (!resposta.ok) throw new Error("Oferta indisponível.");
                 produto = { ...(await resposta.json()).produto, id };

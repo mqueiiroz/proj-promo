@@ -158,7 +158,7 @@ async function carregarProdutos(categoria = "") {
     try {
         const url = "/api/produtos.php" + (categoria ? `?categoria=${encodeURIComponent(categoria)}` : "");
         const resposta = await fetch(url, {
-            headers: { Accept: "application/json" }, cache: "no-store",
+            headers: { Accept: "application/json" },
             signal: AbortSignal.any([requisicao.signal, AbortSignal.timeout(15000)]),
         });
         if (!resposta.ok) throw new Error("Falha na API");

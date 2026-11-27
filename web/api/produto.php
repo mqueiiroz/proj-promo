@@ -55,7 +55,7 @@ try {
         }
     } while (($linha = $consulta->fetch()) !== false);
 
-    echo json_encode(['produto' => $produto, 'historico' => $historico], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    responderApiPublica(['produto' => $produto, 'historico' => $historico]);
 } catch (Throwable $erro) {
     http_response_code(503);
     echo json_encode(['erro' => 'Não foi possível carregar o produto.'], JSON_UNESCAPED_UNICODE);

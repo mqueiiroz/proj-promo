@@ -42,7 +42,7 @@ try {
             'visto_em' => $linha['VISTO_EM'],
         ];
     }
-    echo json_encode(['produtos' => $produtos], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    responderApiPublica(['produtos' => $produtos]);
 } catch (Throwable $erro) {
     http_response_code(503);
     echo json_encode(['erro' => 'Não foi possível carregar os produtos. Tente novamente mais tarde.'], JSON_UNESCAPED_UNICODE);

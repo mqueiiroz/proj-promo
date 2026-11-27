@@ -4,6 +4,7 @@ declare(strict_types=1);
 // Roteador do servidor local: php -S 127.0.0.1:8080 -t web app/roteador.php
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store');
 
 if ($caminho === '/robots.txt' || $caminho === '/sitemap.xml') {
     require __DIR__ . '/rastreamento.php';
@@ -25,7 +26,6 @@ if (is_string($idProduto) && preg_match('/\A[1-9][0-9]{0,37}\z/', $idProduto)) {
     ini_set('display_errors', '0');
     require __DIR__ . '/banco.php';
     require __DIR__ . '/produto-url.php';
-    header('Cache-Control: no-store');
     try {
         $consulta = conectarBanco()->prepare(
             'SELECT p.NOME, p.IMAGEM_URL, p.PRECO_ATUAL, p.DISPONIVEL
@@ -61,7 +61,14 @@ if (is_string($idProduto) && preg_match('/\A[1-9][0-9]{0,37}\z/', $idProduto)) {
 $home = in_array($caminho, ['/', '/index.html'], true);
 if ($home || isset($urlProduto) || in_array($caminho, ['/explorar', '/favoritos', '/sobre', '/privacidade', '/criar-conta', '/recuperar-senha'], true)) {
     header('Content-Type: text/html; charset=UTF-8');
-    header('Cache-Control: no-store');
+    $cacheSegundos = match ($caminho) {
+        '/', '/index.html', '/explorar', '/produto' => 300,
+        '/sobre', '/privacidade' => 3600,
+        default => null,
+    };
+    if ($cacheSegundos !== null && in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'HEAD'], true)) {
+        header("Cache-Control: public, max-age={$cacheSegundos}, must-revalidate");
+    }
     header("Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
     if ($home) {
         require_once __DIR__ . '/metadados.php';

@@ -126,7 +126,6 @@ async function carregarProduto() {
     try {
         const resposta = await fetch(`/api/produto.php?id=${id}`, {
             headers: { Accept: "application/json" },
-            cache: "no-store",
             signal: AbortSignal.timeout(15000),
         });
         if (resposta.status === 404) {
