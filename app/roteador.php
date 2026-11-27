@@ -22,6 +22,14 @@ if ($caminho === '/produto.html') {
 } elseif (preg_match('~\A/produto/([1-9][0-9]{0,37})(?:/[^/]+)?/?\z~', $caminho ?? '', $partes)) {
     $idProduto = $partes[1];
 }
+$home = in_array($caminho, ['/', '/index.html'], true);
+if ($home || in_array($caminho, ['/explorar', '/produto.html'], true) || $idProduto !== null) {
+    require_once __DIR__ . '/limite-publico.php';
+    if (!limitarRequisicoesPublicas('paginas', 60)) {
+        return true;
+    }
+}
+
 if (is_string($idProduto) && preg_match('/\A[1-9][0-9]{0,37}\z/', $idProduto)) {
     ini_set('display_errors', '0');
     require __DIR__ . '/banco.php';
@@ -58,7 +66,6 @@ if (is_string($idProduto) && preg_match('/\A[1-9][0-9]{0,37}\z/', $idProduto)) {
     }
 }
 
-$home = in_array($caminho, ['/', '/index.html'], true);
 if ($home || isset($urlProduto) || in_array($caminho, ['/explorar', '/favoritos', '/sobre', '/privacidade', '/criar-conta', '/recuperar-senha'], true)) {
     header('Content-Type: text/html; charset=UTF-8');
     $cacheSegundos = match ($caminho) {

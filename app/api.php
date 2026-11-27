@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/limite-publico.php';
+
 function prepararApiGet(): bool
 {
     ini_set('display_errors', '0');
@@ -9,7 +11,7 @@ function prepararApiGet(): bool
     header('X-Content-Type-Options: nosniff');
 
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET') {
-        return true;
+        return limitarRequisicoesPublicas('api', 120);
     }
 
     http_response_code(405);

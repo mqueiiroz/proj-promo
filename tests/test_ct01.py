@@ -119,7 +119,7 @@ class AplicacaoCt01:
         )
         self.cookie = ""
 
-    def requisitar(self, rota, formulario=None):
+    def requisitar(self, rota, formulario=None, endereco="127.0.0.1", cabecalhos=None):
         corpo = b"" if formulario is None else urlencode(formulario).encode("ascii")
         url = urlsplit(rota)
         script = {
@@ -136,7 +136,8 @@ class AplicacaoCt01:
             "CONTENT_TYPE": "application/x-www-form-urlencoded",
             "CONTENT_LENGTH": str(len(corpo)),
             "HTTP_COOKIE": self.cookie,
-            "REMOTE_ADDR": "127.0.0.1",
+            "REMOTE_ADDR": endereco,
+            **(cabecalhos or {}),
         }
         resposta = executar([self.cgi], cwd=self.pasta, env=ambiente, input=corpo)
         cabecalho, texto = re.split(rb"\r?\n\r?\n", resposta, maxsplit=1)
@@ -365,6 +366,38 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
     assert catalogo.status == 200 and "SSDs</strong> (2)" in catalogo.texto
     assert "<td>Em promoção</td>" in catalogo.texto
     assert "<td>Não está em promoção</td>" in catalogo.texto
+
+
+def test_limites_de_requisicoes_publicas(aplicacao):
+    app = aplicacao
+    for tentativa in range(60):
+        assert app.requisitar("/" if tentativa % 2 == 0 else "/explorar").status == 200
+    bloqueio = app.requisitar(
+        "/explorar", cabecalhos={"HTTP_CF_CONNECTING_IP": "192.0.2.20"}
+    )
+    assert bloqueio.status == 429
+    assert 1 <= int(bloqueio.cabecalhos["Retry-After"]) <= 60
+    assert bloqueio.cabecalhos["Cache-Control"] == "no-store"
+    assert app.requisitar("/explorar", endereco="192.0.2.20").status == 200
+    assert app.requisitar("/robots.txt").status == 200
+    assert app.requisitar("/sitemap.xml").status == 200
+
+    app.ambiente_php["RENDER"] = "true"
+    visitante = {"HTTP_CF_CONNECTING_IP": "192.0.2.30"}
+    for tentativa in range(120):
+        rota, status = ("/api/produtos.php", 200) if tentativa % 2 == 0 else ("/api/produto.php?id=1", 404)
+        assert app.requisitar(rota, cabecalhos=visitante).status == status
+    bloqueio = app.requisitar("/api/produtos", cabecalhos={
+        **visitante, "HTTP_X_FORWARDED_FOR": "192.0.2.40"
+    })
+    assert bloqueio.status == 429
+    assert bloqueio.json()["erro"]
+    assert 1 <= int(bloqueio.cabecalhos["Retry-After"]) <= 60
+    assert bloqueio.cabecalhos["Cache-Control"] == "no-store"
+    assert app.requisitar("/api/produtos", cabecalhos={
+        "HTTP_CF_CONNECTING_IP": "192.0.2.40"
+    }).status == 200
+    assert app.requisitar("/explorar", cabecalhos=visitante).status == 200
 
 
 def test_lote_com_falha_e_sucesso_exibe_aviso_sem_alterar_oferta_anterior(aplicacao, monkeypatch):
