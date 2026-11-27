@@ -905,4 +905,50 @@ A Render foi escolhida como alternativa à VPS. A preparação usa Apache e PHP 
 
 O PHP respondeu à home e ao login em uma simulação local do ambiente Render. O acesso a `/painel` sem sessão retornou `303` para `/login`, e o cookie apresentou `Secure`, `HttpOnly` e `SameSite=Strict`. A suíte offline passou com 86 testes e 73 subtestes.
 
-**Status: em andamento.** Git sem commits ou remoto e Docker local indisponível para testar a imagem. A publicação, o PostgreSQL hospedado, a validação HTTPS e o domínio próprio continuam pendentes.
+O primeiro commit foi publicado no GitHub e o painel da Render mostrou o Web Service em estado `Live` no endereço `https://proj-promo.onrender.com`. Em Oregon, foi provisionado o PostgreSQL 18 e aplicado o esquema inicial por conexão externa TLS. A conferência após o `COMMIT` retornou cinco tabelas, dez índices, os cadastros de Kabum e Terabyte e zero ofertas na visão `V_PROMOCOES_ATIVAS`.
+
+Depois da tentativa de carga, a API pública da Render retornou 100 ofertas, o limite da listagem. A conferência da API comprova que o site está lendo dados do banco hospedado. As contagens completas da importação ainda aguardam a saída do terminal. O Agendador do Windows mostrou `ProjPromo-KaBuM` habilitada, com resultado `0`, e o log registrou `EXECUCAO_OK` às 10h15 de 24/11/2026 (Manaus). A configuração local aponta para o Oracle. O contêiner do site contém Apache e PHP, e a coleta agendada na Render faz parte da S5-5.
+
+Após remover o limite da listagem, a validação pública confirmou 184 ofertas, consulta de produto com histórico, resposta `200` da home em HTTPS e redirecionamento `301` de HTTP para HTTPS. O acesso sem sessão a `/painel` retornou `303` para `/login` e enviou o cookie `promo_painel` com `Secure`, `HttpOnly` e `SameSite=Strict`.
+
+Em 24/11/2026, foi definido que o site continuará usando `https://proj-promo.onrender.com` como endereço público nesta fase. A contratação e a configuração de um domínio próprio foram adiadas.
+
+**Status: concluída para esta fase.** O responsável confirmou o login no painel administrativo com uma conta cadastrada no banco hospedado. A hospedagem e o HTTPS foram validados no endereço da Render. O agendamento do coletor na Render fica na S5-5.
+
+## 37. S5-5 — Coleta agendada na Render
+
+O primeiro teste no Cron Job da Render usa `python -m scraper.coletar --categorias SSD --max-paginas 1 --max-produtos 1 --sem-gravar`. O objetivo é confirmar o acesso à KaBuM! a partir de Oregon antes de habilitar a gravação no PostgreSQL hospedado. O resultado será conferido em **Runs**, pela presença de um produto coletado e pela ausência de falhas.
+
+Em 24/11/2026, o Cron Job foi publicado na Render e executou o comando de teste em Oregon. A requisição à categoria de SSD (`/hardware/ssd-2-5`) recebeu HTTP `403`. O coletor encerrou sem novas tentativas, com zero páginas lidas, zero produtos coletados, zero gravações e código de saída `1`. A causa específica da recusa não foi confirmada.
+
+Em 25/11/2026, após a aprovação no programa de afiliados da KaBuM!, foi escolhido o feed oficial da Awin como fonte para o coletor na Render. O Cron Job usará a URL de download em `AWIN_FEED_URL`. A primeira validação do CSV deve confirmar o identificador da loja, as categorias, os campos de preço e disponibilidade e a associação com os produtos existentes antes de habilitar a gravação.
+
+O arquivo de amostra `17729-46967-pt_BR-Kabum_BR_Datafeed.csv.gz` foi lido localmente. Foram encontrados 4.981 produtos com `merchant_product_id` distinto, `search_price` preenchido e `in_stock=1`. `merchant_category` estava preenchido em todas as linhas. `product_price_old`, `rrp_price`, `stock_quantity`, `stock_status` e `merchant_product_category_path` vieram vazios. O `aw_deep_link` usa `www.awin1.com/pclick.php`. A amostra não inclui `merchant_deep_link`, `currency` ou `last_updated`. O preço atual pode ser acompanhado, mas a regra atual de ofertas depende de um preço original maior.
+
+A segunda amostra inclui `merchant_deep_link`, `currency` e `last_updated`. Os 4.981 links da loja apontam para `www.kabum.com.br` e têm o mesmo ID de `merchant_product_id` no caminho. A moeda é `BRL` em todas as linhas. `last_updated`, `product_price_old` e `rrp_price` vieram vazios. A data da consulta ao feed pode ser registrada como horário da coleta, sem atribuí-la à atualização do catálogo pela loja.
+
+A terceira amostra trouxe oito colunas adicionais. A marca veio preenchida para os 4.981 produtos e o ID da marca para 2.641. As colunas de economia, percentual de economia, preço-base e tipo de produto vieram vazias. Os IDs e todos os valores das colunas compartilhadas são iguais aos da segunda amostra.
+
+O coletor `scraper.awin` foi implementado para ler o CSV compactado, validar os vínculos com a KaBuM!, atualizar os produtos por código e gravar preços no histórico somente quando mudam. Uma identificação do conteúdo é persistida por loja junto da carga para evitar regravar uma versão já processada. Na falta de preço anterior, a gravação conserva a referência existente. A ausência de um produto no feed não altera seu estoque.
+
+O teste local leu 1.205 produtos e a suíte passou com 86 testes e 73 subtestes. Após configurar `DB_NAME` no Cron Job, a primeira execução de `python -m scraper.awin` na Render importou 1.205 produtos e terminou com sucesso. A API pública retornou 187 ofertas e a consulta de produto retornou histórico.
+
+Na aba **Runs**, a carga inicial começou às 08h53m40s e terminou com sucesso. Uma nova execução começou às 09h00m04s e terminou com a mensagem `Feed consultado: versão já processada.`. Isso confirma a nova consulta ao feed e o reconhecimento de uma versão já importada.
+
+O painel passou a distinguir a última consulta bem-sucedida à Awin da última importação individual de um produto. O coletor registra a consulta mesmo quando o feed é igual e o painel mostra esse horário no topo. A tabela conserva o horário da importação e deixa de atribuir a origem fixa “Coleta local” aos produtos. A suíte passou com 86 testes e 73 subtestes. A mudança foi enviada à branch `main` no commit `1e6c275`.
+
+**Status: concluída em 25/11/2026.** A Render importou 1.205 produtos do feed oficial da KaBuM!. O histórico do Cron Job mostrou quatro disparos consecutivos nos minutos 00 e 30, às 09h00, 09h30, 10h00 e 10h30, confirmando a cadência de 30 minutos. Todos terminaram com sucesso e reconheceram que a versão do feed já havia sido processada. A próxima etapa é a S5-6, backup automático do PostgreSQL.
+
+## 38. S5-6 — Backup do PostgreSQL hospedado
+
+Em 25/11/2026, foi iniciada a validação de um backup lógico do esquema `public` da Render com `pg_dump` em formato custom. O procedimento usa TLS para a conexão externa e restaura o arquivo com `pg_restore` em um banco local separado. A validação consulta produtos, histórico de preços, ofertas ativas e o estado do feed. O arquivo contém dados administrativos e fica fora do repositório.
+
+O primeiro backup da Render foi criado em `%LOCALAPPDATA%/RadarHardware/backups`. A primeira tentativa de restauração parou na autenticação do usuário `postgres` local, antes da criação do banco de teste. O mesmo arquivo será reutilizado na repetição.
+
+A primeira execução de `pg_restore` encontrou o esquema `public` que o PostgreSQL cria por padrão. A repetição usou um banco novo e isolado, com `--clean --if-exists` e `--single-transaction`. A restauração no banco `proj_promo_restore_20261125_150838_011293` foi concluída. A conferência retornou 1.264 produtos, 1.512 registros de preço, 187 ofertas e um registro de estado do feed.
+
+Foi escolhida a opção de um Cron Job Docker separado que executa `pg_dump`, verifica se o arquivo pode ser listado por `pg_restore` e o envia criptografado ao S3 privado. A agenda preparada é diária, às 04h UTC, meia-noite em Manaus. A credencial proposta tem acesso de gravação apenas no prefixo `postgresql/proj-promo/`.
+
+O console do S3 mostrou um primeiro dump de 326,1 KB em 26/11/2026, às 09h18 (Manaus). Em 27/11/2026, o arquivo `20261127T040050Z.dump`, de 332,6 KB, foi gravado às 00h00min54s (Manaus) no prefixo `postgresql/proj-promo/`, dentro da janela do disparo diário.
+
+**Status: concluída em 27/11/2026.** A restauração de teste foi validada com o backup manual de 25/11. O envio automático ao S3 foi confirmado pelo objeto de 27/11.
