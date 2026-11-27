@@ -14,7 +14,7 @@ $scripts = match ($caminho) {
     '/produto' => ['/app.js', '/vendor/chart.umd.min.js', '/favoritos.js', '/produto.js'],
     default => [],
 };
-abrirPagina($titulos[$caminho], $caminho, $scripts);
+abrirPagina($titulos[$caminho], $caminho, $scripts, produtoMeta: $produtoMeta ?? null);
 ?>
 <?php if ($caminho === '/explorar'): ?>
     <h1>Explorar ofertas</h1>

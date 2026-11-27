@@ -280,7 +280,19 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
         redirecionamento = app.requisitar(rota_antiga)
         assert redirecionamento.status == 302, redirecionamento.texto
         assert redirecionamento.cabecalhos["Location"] == url_detalhes
-    assert app.requisitar(url_detalhes).status == 200
+    pagina_produto = app.requisitar(url_detalhes)
+    assert pagina_produto.status == 200
+    imagem = app.consultar(f"SELECT IMAGEM_URL FROM PRODUTO WHERE ID = {int(id_produto)}")[0][0]
+    assert f'<meta property="og:image" content="{imagem}">' in pagina_produto.texto
+    dados_produto = json.loads(re.search(
+        r'<script type="application/ld\+json">(.*?)</script>', pagina_produto.texto
+    ).group(1))
+    assert dados_produto["@type"] == "Product"
+    assert urlsplit(dados_produto["url"]).path == url_detalhes
+    assert dados_produto["image"] == imagem
+    assert Decimal(dados_produto["offers"]["price"]) == Decimal("1899.00")
+    assert dados_produto["offers"]["priceCurrency"] == "BRL"
+    assert dados_produto["offers"]["availability"] == "https://schema.org/InStock"
     assert app.requisitar("/produto/999999/oferta-inexistente").status == 404
     resposta = app.requisitar(f"/api/produto.php?id={id_produto}")
     assert resposta.status == 200
@@ -313,6 +325,7 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
     app.renderizar(lista_final, {"id": concorrente["id"], "preco": 2199, "afiliado": concorrente["url_afiliado"]})
     esgotado = app.requisitar(f"/api/produto.php?id={id_produto}").json()
     assert esgotado["produto"]["disponivel"] is False
+    assert "OutOfStock" in app.requisitar(url_detalhes).texto
     assert esgotado["historico"] == detalhe["historico"]
     painel = app.requisitar("/painel")
     assert painel.status == 200 and "Coleta concluída" in painel.texto and "Produto esgotado" in painel.texto

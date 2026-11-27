@@ -23,23 +23,32 @@ if (is_string($idProduto) && preg_match('/\A[1-9][0-9]{0,37}\z/', $idProduto)) {
     header('Cache-Control: no-store');
     try {
         $consulta = conectarBanco()->prepare(
-            'SELECT p.NOME FROM PRODUTO p JOIN LOJA l ON l.ID = p.LOJA_ID
+            'SELECT p.NOME, p.IMAGEM_URL, p.PRECO_ATUAL, p.DISPONIVEL
+             FROM PRODUTO p JOIN LOJA l ON l.ID = p.LOJA_ID
              WHERE p.ID = CAST(:id AS DECIMAL(38, 0)) AND l.ATIVA = 1'
         );
         $consulta->execute(['id' => $idProduto]);
-        $nomeProduto = $consulta->fetchColumn();
+        $produto = $consulta->fetch();
     } catch (Throwable) {
         http_response_code(503);
         header('Content-Type: text/plain; charset=UTF-8');
         echo 'Não foi possível carregar o produto. Tente novamente mais tarde.';
         return true;
     }
-    if ($nomeProduto !== false) {
+    if ($produto !== false) {
+        $nomeProduto = $produto['NOME'];
         $urlProduto = urlProduto($idProduto, $nomeProduto);
         if ($caminho !== $urlProduto) {
             header('Location: ' . $urlProduto, true, 302);
             return true;
         }
+        $produtoMeta = [
+            'nome' => $nomeProduto,
+            'url' => $urlProduto,
+            'imagem' => $produto['IMAGEM_URL'],
+            'preco' => $produto['PRECO_ATUAL'] === null ? null : (string) $produto['PRECO_ATUAL'],
+            'disponivel' => (int) $produto['DISPONIVEL'] === 1,
+        ];
         $caminho = '/produto';
     }
 }
@@ -50,7 +59,12 @@ if ($home || isset($urlProduto) || in_array($caminho, ['/explorar', '/favoritos'
     header('Cache-Control: no-store');
     header("Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
     if ($home) {
-        readfile(dirname(__DIR__) . '/web/index.html');
+        require_once __DIR__ . '/metadados.php';
+        $html = file_get_contents(dirname(__DIR__) . '/web/index.html');
+        ob_start();
+        imprimirMetadados('Ofertas de hardware', '/');
+        $metadados = ob_get_clean();
+        echo str_replace('<!-- metadados -->', $metadados, $html);
     } else {
         require __DIR__ . '/paginas.php';
     }
@@ -63,7 +77,7 @@ if ($caminho === '/api/produtos') {
 }
 
 if (in_array($caminho, [
-    '/app.js', '/style.css', '/home.css', '/api/produtos.php', '/api/produto.php',
+    '/app.js', '/style.css', '/home.css', '/compartilhar.png', '/api/produtos.php', '/api/produto.php',
     '/produto.js', '/explorar.js', '/favoritos.js', '/paginas.css', '/vendor/chart.umd.min.js',
 ], true)) {
     return false; // O servidor entrega o arquivo estático ou executa o endpoint PHP.
