@@ -323,6 +323,12 @@ Após validar o download, configure no Cron Job as mesmas variáveis `DB_*` do s
 
 O importador usa as dez categorias atendidas pelo site e o código do produto na KaBuM!. A disponibilidade vem de `in_stock` nas linhas do feed. Produtos ausentes no arquivo conservam seu último estado conhecido. Se faltar preço anterior, o importador preserva o preço de referência já registrado para produtos existentes. Produtos novos sem referência passam a ter histórico, mas aguardam uma referência válida para aparecer como promoção.
 
+### Alerta de falha da coleta (S7-5)
+
+No Cron Job da Awin, configure `RESEND_API_KEY` com uma chave de envio do Resend, `ALERTA_COLETA_DE` com um remetente autorizado e `ALERTA_COLETA_PARA` com o e-mail que recebe os avisos. A coleta agendada envia um aviso quando falha na leitura, na validação ou na gravação do feed. O aviso traz a etapa e o horário em Manaus.
+
+Para testar a entrega com as mesmas variáveis do Cron Job, execute `python -m scraper.awin --testar-alerta` uma vez. O comando envia um e-mail identificado como teste e termina sem consultar a Awin ou o banco. Confira o recebimento na caixa de entrada e mantenha `python -m scraper.awin` como comando agendado.
+
 ### Backup automático do PostgreSQL (S5-6)
 
 Crie um bucket privado no S3 com **Block Public Access** habilitado. Para o job, use uma credencial AWS dedicada com `s3:PutObject` restrito a `arn:aws:s3:::NOME_DO_BUCKET/postgresql/proj-promo/*`. O job não precisa listar, ler ou apagar objetos.

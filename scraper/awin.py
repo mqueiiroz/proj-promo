@@ -12,11 +12,13 @@ import re
 import sys
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
+import zlib
 
 from sqlalchemy import MetaData, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from scraper.afiliados import ANUNCIANTE_KABUM, gerar_link_afiliado
+from scraper.alerta_coleta import enviar_alerta_coleta
 from scraper.banco import _bloquear_loja_kabum_ativa, _registrar_evento, criar_engine, salvar_produto
 from scraper.modelos import Produto
 
@@ -152,31 +154,44 @@ def importar(engine, produtos, afiliado, versao):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arquivo", type=Path, help="CSV local para validar a leitura")
-    parser.add_argument("--sem-gravar", action="store_true")
+    modo = parser.add_mutually_exclusive_group()
+    modo.add_argument("--sem-gravar", action="store_true")
+    modo.add_argument("--testar-alerta", action="store_true", help="envia um alerta simulado sem acessar o banco")
     args = parser.parse_args(argv)
+    if args.testar_alerta:
+        if args.arquivo is not None:
+            parser.error("--testar-alerta não aceita --arquivo.")
+        return 0 if enviar_alerta_coleta("Simulação de falha na coleta", teste=True) else 1
+
+    validar_apenas = args.sem_gravar or args.arquivo is not None
     engine = None
+    etapa = "Leitura do feed"
     try:
         dados = ler_feed(args.arquivo)
+        etapa = "Validação do feed"
         produtos, afiliado = interpretar_feed(dados)
-        if args.sem_gravar or args.arquivo is not None:
+        if validar_apenas:
             print(f"Feed válido: {len(produtos)} produtos nas categorias atendidas; zero gravações.")
             return 0
+        etapa = "Gravação no PostgreSQL"
         engine = criar_engine()
         total = importar(engine, produtos, afiliado, sha256(dados).hexdigest())
     except UnicodeError:
-        print("Falha no feed: o arquivo precisa estar em UTF-8.", file=sys.stderr)
-        return 1
+        mensagem = "Falha no feed: o arquivo precisa estar em UTF-8."
     except ValueError as erro:
-        print(f"Falha no feed: {erro}", file=sys.stderr)
-        return 1
-    except (SQLAlchemyError, OSError, EOFError, csv.Error):
-        print("Falha ao ler o arquivo ou gravar o feed no PostgreSQL.", file=sys.stderr)
-        return 1
+        mensagem = f"Falha no feed: {erro}"
+    except (SQLAlchemyError, OSError, EOFError, csv.Error, zlib.error):
+        mensagem = "Falha ao ler o arquivo ou gravar o feed no PostgreSQL."
+    else:
+        print(f"Feed importado: {total} produtos." if total else "Feed consultado: versão já processada.")
+        return 0
     finally:
         if engine is not None:
             engine.dispose()
-    print(f"Feed importado: {total} produtos." if total else "Feed consultado: versão já processada.")
-    return 0
+    print(mensagem, file=sys.stderr)
+    if not validar_apenas:
+        enviar_alerta_coleta(etapa)
+    return 1
 
 
 if __name__ == "__main__":
