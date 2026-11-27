@@ -40,7 +40,7 @@ function fecharPagina(): void
 </main>
 <footer class="home-largura home-rodape">
     <span>Radar Hardware</span>
-    <nav aria-label="Informações"><a href="/sobre">Sobre o projeto</a><a href="/privacidade">Privacidade</a></nav>
+    <nav aria-label="Informações"><a href="/sobre">Como funciona</a><a href="/privacidade">Política de privacidade</a></nav>
 </footer>
 </body>
 </html>

@@ -4,7 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/layout.php';
 $titulos = [
     '/explorar' => 'Explorar ofertas', '/favoritos' => 'Favoritos e alertas',
-    '/sobre' => 'Sobre o projeto', '/privacidade' => 'Privacidade',
+    '/sobre' => 'Como funciona', '/privacidade' => 'Política de privacidade',
     '/criar-conta' => 'Criar conta', '/recuperar-senha' => 'Recuperar senha',
     '/produto' => $nomeProduto ?? 'Detalhes do produto',
 ];
@@ -40,28 +40,40 @@ abrirPagina($titulos[$caminho], $caminho, $scripts);
     <p id="estado-favoritos" role="status">Carregando favoritos…</p>
     <div id="favoritos-lista"></div>
 <?php elseif ($caminho === '/sobre'): ?>
-    <h1>Sobre o projeto</h1>
+    <h1>Como funciona</h1>
     <section class="painel-claro">
         <h2>Como as ofertas aparecem</h2>
-        <p>O Radar Hardware reúne descontos registrados na KaBuM! e identifica a loja que vende cada oferta. O preço e a disponibilidade podem mudar entre a coleta e a sua visita.</p>
+        <p>O Radar Hardware consulta o catálogo da KaBuM! disponibilizado pela Awin e reúne as ofertas encontradas. Ao clicar em “Ver na loja”, você pode conferir o preço e o estoque atuais na KaBuM!, onde a compra é feita.</p>
     </section>
     <section class="painel-claro">
         <h2>Como ler o histórico</h2>
-        <p>O gráfico mostra os preços registrados e a data de cada mudança. A tabela abaixo dele detalha os valores e horários.</p>
+        <p>O gráfico mostra os preços registrados pelo Radar Hardware ao longo do tempo. Consulte a tabela abaixo dele para ver os valores e os horários dos registros. Preço e estoque podem mudar entre a coleta e a sua visita.</p>
     </section>
     <section class="painel-claro">
         <h2>Links de afiliado</h2>
         <p>Alguns links do Radar Hardware são links de afiliado. Se você comprar por um deles, podemos receber uma comissão.</p>
     </section>
 <?php elseif ($caminho === '/privacidade'): ?>
-    <h1>Privacidade</h1>
+    <h1>Política de privacidade</h1>
     <section class="painel-claro">
         <h2>Dados da conta</h2>
-        <p>As contas administrativas armazenam o e-mail e o hash da senha. O painel usa um cookie de sessão para manter o acesso autenticado.</p>
+        <p>O Radar Hardware armazena o e-mail e o hash da senha das contas administrativas para autenticar o acesso ao painel. O painel usa um cookie de sessão para manter esse acesso autenticado.</p>
     </section>
     <section class="painel-claro">
         <h2>Preferências de alerta</h2>
-        <p>Favoritos e preços-alvo ficam neste navegador. Você pode removê-los na tela de favoritos ou limpar os dados do site no navegador.</p>
+        <p>Favoritos e preços-alvo ficam no armazenamento local deste navegador. Você pode removê-los na tela de favoritos ou limpar os dados do site nas configurações do navegador.</p>
+    </section>
+    <section class="painel-claro">
+        <h2>Métricas de visita</h2>
+        <p>O Radar Hardware não usa ferramentas de análise de visitas ou cliques nas páginas públicas.</p>
+    </section>
+    <section class="painel-claro">
+        <h2>Links de afiliado e sites externos</h2>
+        <p>Ao seguir um link de afiliado, a Awin e a loja de destino podem registrar o clique e associá-lo a uma compra para atribuir a comissão. O tratamento de dados nesses sites segue as respectivas políticas de privacidade.</p>
+    </section>
+    <section class="painel-claro">
+        <h2>Contato sobre privacidade</h2>
+        <p>Para tirar dúvidas ou enviar uma solicitação sobre seus dados pessoais, escreva para <a href="mailto:matheus_queiroz_guerreiro@hotmail.com">matheus_queiroz_guerreiro@hotmail.com</a>.</p>
     </section>
 <?php elseif ($caminho === '/produto'): ?>
     <?php require __DIR__ . '/detalhes-pagina.php'; ?>
