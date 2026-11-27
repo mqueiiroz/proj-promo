@@ -14,6 +14,7 @@ import subprocess
 from urllib.error import HTTPError
 from urllib.parse import parse_qs, urlencode, urlsplit
 from uuid import uuid4
+from xml.etree import ElementTree
 
 import pytest
 from sqlalchemy import URL, create_engine, event
@@ -326,6 +327,24 @@ def test_ct01_ciclo_da_promocao(aplicacao, monkeypatch):
     esgotado = app.requisitar(f"/api/produto.php?id={id_produto}").json()
     assert esgotado["produto"]["disponivel"] is False
     assert "OutOfStock" in app.requisitar(url_detalhes).texto
+    sitemap = app.requisitar("/sitemap.xml")
+    assert sitemap.status == 200
+    assert sitemap.cabecalhos["Content-Type"].startswith("application/xml")
+    namespace = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
+    raiz = ElementTree.fromstring(sitemap.texto)
+    assert raiz.tag == f"{namespace}urlset"
+    urls = [no.text for no in raiz.iter(f"{namespace}loc")]
+    assert dados_produto["url"] in urls
+    assert {urlsplit(url).path for url in urls} == {
+        "/", "/explorar", "/sobre", "/privacidade", url_detalhes, concorrente["url_detalhes"]
+    }
+    robots = app.requisitar("/robots.txt")
+    assert robots.status == 200
+    assert robots.cabecalhos["Content-Type"].startswith("text/plain")
+    origem = urlsplit(dados_produto["url"]).netloc
+    assert f"Sitemap: https://{origem}/sitemap.xml" in robots.texto.splitlines()
+    assert "Disallow: /painel" in robots.texto.splitlines()
+    assert "Disallow: /produto" not in robots.texto.splitlines()
     assert esgotado["historico"] == detalhe["historico"]
     painel = app.requisitar("/painel")
     assert painel.status == 200 and "Coleta concluída" in painel.texto and "Produto esgotado" in painel.texto

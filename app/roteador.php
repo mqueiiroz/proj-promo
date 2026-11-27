@@ -5,6 +5,11 @@ declare(strict_types=1);
 $caminho = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 header('X-Content-Type-Options: nosniff');
 
+if ($caminho === '/robots.txt' || $caminho === '/sitemap.xml') {
+    require __DIR__ . '/rastreamento.php';
+    return true;
+}
+
 if (in_array($caminho, ['/login', '/painel', '/logout'], true)) {
     require __DIR__ . '/painel.php';
     return true;

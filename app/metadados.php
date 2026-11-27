@@ -1,6 +1,11 @@
 <?php
 declare(strict_types=1);
 
+function origemPublica(): string
+{
+    return rtrim(getenv('RENDER_EXTERNAL_URL') ?: 'https://proj-promo.onrender.com', '/');
+}
+
 function imprimirMetadados(string $titulo, string $pagina, ?array $produto = null): void
 {
     $descricao = match ($pagina) {
@@ -16,7 +21,7 @@ function imprimirMetadados(string $titulo, string $pagina, ?array $produto = nul
         return;
     }
 
-    $origem = rtrim(getenv('RENDER_EXTERNAL_URL') ?: 'https://proj-promo.onrender.com', '/');
+    $origem = origemPublica();
     $url = $origem . ($produto['url'] ?? $pagina);
     $imagemProduto = $produto['imagem'] ?? '';
     $temFoto = filter_var($imagemProduto, FILTER_VALIDATE_URL) !== false
