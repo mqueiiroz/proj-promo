@@ -72,7 +72,8 @@ test('renderiza produto como texto e mantém os centavos', async () => {
     const card = produtos.children[0];
     assert.equal(card.children[1].textContent, '<script>alert(1)</script>');
     assert.match(card.children[2].textContent, /1\.149,99/);
-    assert.equal(card.children[4].rel, 'noopener noreferrer');
+    assert.equal(card.children[3].textContent, 'Data de atualização indisponível');
+    assert.equal(card.children.find(item => item.tag === 'a').rel, 'noopener noreferrer');
     assert.equal(vm.runInContext("linkSeguro('javascript:alert(1)')", contexto), null);
 });
 
@@ -106,7 +107,7 @@ test('filtra pela API, descarta resposta atrasada e exibe preço original e desc
     anterior.resolve({ ok: true, json: async () => ({ produtos: [] }) });
     await gpu;
     assert.equal(estado.hidden, true);
-    const comparacao = produtos.children[0].children[4];
+    const comparacao = produtos.children[0].children.find(item => item.className === 'comparacao');
     assert.equal(comparacao.children[0].tag, 'del');
     assert.match(comparacao.children[0].textContent, /125,00/);
     assert.equal(comparacao.children[1].textContent, '−20%');
@@ -128,8 +129,9 @@ test('usa deeplink Awin válido do mesmo produto e identifica link patrocinado',
         nome: 'SSD de teste', loja: 'Kabum', categoria: 'SSD', preco: '100.00',
         disponivel: true, url: original, url_afiliado: afiliado,
     }] });
-    assert.equal(produtos.children[0].children[4].href, afiliado);
-    assert.equal(produtos.children[0].children[4].rel, 'sponsored noopener noreferrer');
+    const link = produtos.children[0].children.find(item => item.tag === 'a');
+    assert.equal(link.href, afiliado);
+    assert.equal(link.rel, 'sponsored noopener noreferrer');
 });
 
 test('links de afiliado inválidos usam a URL original segura', async () => {
@@ -146,7 +148,7 @@ test('links de afiliado inválidos usam a URL original segura', async () => {
             nome: 'SSD', loja: 'Kabum', categoria: 'SSD', preco: '100.00',
             disponivel: true, url: original, url_afiliado: afiliado,
         }] });
-        assert.equal(produtos.children[0].children[4].href, original);
+        assert.equal(produtos.children[0].children.find(item => item.tag === 'a').href, original);
     }
 });
 
@@ -162,7 +164,7 @@ test('o título do card abre a página do produto', async () => {
 test('o destaque usa a primeira oferta da API com os links reais de detalhes e loja', async () => {
     const url = 'https://www.kabum.com.br/produto/42';
     const oferta = { id: '42', nome: 'SSD de teste', categoria: 'SSD', preco: '250.15', url,
-        url_detalhes: '/produto/42/ssd-de-teste' };
+        url_detalhes: '/produto/42/ssd-de-teste', visto_em: '2026-11-27 00:30:40' };
     const { destaque, produtos } = await executar({ produtos: [
         oferta, { ...oferta, id: '43', nome: 'Segunda oferta' },
     ] });
@@ -170,8 +172,10 @@ test('o destaque usa a primeira oferta da API com os links reais de detalhes e l
     assert.equal(destaque.hidden, false);
     assert.equal(texto.children[1].textContent, oferta.nome);
     assert.match(texto.children[2].textContent, /250,15/);
-    assert.equal(texto.children[3].children[0].href, '/produto/42/ssd-de-teste');
-    assert.equal(texto.children[3].children[1].href, url);
+    assert.equal(texto.children[3].textContent, 'Última atualização: 27/11/2026 às 00h30 (Manaus)');
+    const acoes = texto.children.find(item => item.className === 'home-destaque-acoes');
+    assert.equal(acoes.children[0].href, '/produto/42/ssd-de-teste');
+    assert.equal(acoes.children[1].href, url);
     assert.equal(produtos.children.length, 2);
 });
 
@@ -216,7 +220,7 @@ test('preenche o gráfico e a tabela com os preços registrados e mantém o link
     ]);
     const card = elementos.detalhes.children[0];
     assert.equal(card.children[1].tag, 'h1');
-    assert.equal(card.children[4].href, 'https://www.kabum.com.br/produto/42');
+    assert.equal(card.children.find(item => item.tag === 'a').href, 'https://www.kabum.com.br/produto/42');
     const pontos = graficos[0].configuracao.data.datasets[0].data;
     assert.equal(pontos[0].x, Date.UTC(2026, 10, 16, 8));
     assert.equal(pontos[0].y, 225.99);

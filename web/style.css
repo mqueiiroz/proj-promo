@@ -19,6 +19,7 @@ h2 { font-size: 1.1rem; line-height: 1.5; margin: 0; overflow-wrap: anywhere; }
 .estoque { color: #c3cbd8; font-size: .875rem; margin: 8px 0 24px; }
 .disponivel { color: #88e0bd; }
 .comparacao { color: #adbacc; margin: 0 0 20px; }
+.data-atualizacao, .aviso-preco { font-size: .875rem; }
 .desconto { color: #88e0bd; font-weight: 700; margin-inline-start: 12px; }
 a { display: inline-block; background: #8ae2c0; color: #10231c; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-top: auto; }
 a:hover { background: #b1f2d8; }

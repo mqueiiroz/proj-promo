@@ -19,6 +19,7 @@ try {
     $consulta = conectarBanco()->prepare(
         "SELECT p.NOME, l.NOME AS LOJA, p.CATEGORIA, p.PRECO_ATUAL, p.PRECO_ORIGINAL, p.DISPONIVEL,
                 p.URL_ORIGINAL, p.URL_AFILIADO, v.PRECO_REFERENCIA, v.ORIGEM_REFERENCIA, v.DESCONTO_PCT,
+                TO_CHAR(p.VISTO_EM, 'YYYY-MM-DD HH24:MI:SS') AS VISTO_EM,
                 h.PRECO AS PRECO_REGISTRADO,
                 TO_CHAR(h.COLETADO_EM, 'YYYY-MM-DD HH24:MI:SS') AS DATA_COLETA
          FROM PRODUTO p
@@ -45,6 +46,7 @@ try {
         'desconto_pct' => $linha['DESCONTO_PCT'] === null ? null : (int) $linha['DESCONTO_PCT'],
         'disponivel' => (int) $linha['DISPONIVEL'] === 1,
         'url' => $linha['URL_ORIGINAL'], 'url_afiliado' => $linha['URL_AFILIADO'],
+        'visto_em' => $linha['VISTO_EM'],
     ];
     $historico = [];
     do {

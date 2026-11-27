@@ -9,6 +9,15 @@ function elemento(tag, classe, texto) {
     return node;
 }
 
+function criarDataAtualizacao(produto) {
+    const data = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):\d{2}$/.exec(produto.visto_em);
+    if (!data) return elemento("p", "data-atualizacao", "Data de atualização indisponível");
+
+    const [, ano, mes, dia, hora, minuto] = data;
+    return elemento("p", "data-atualizacao",
+        `Última atualização: ${dia}/${mes}/${ano} às ${hora}h${minuto} (Manaus)`);
+}
+
 function linkSeguro(valor) {
     try {
         const url = new URL(valor);
@@ -75,6 +84,7 @@ function renderizarDestaque(area, produto) {
         elemento("h2", "", produto.nome),
         elemento("p", "home-destaque-preco", produto.preco == null
             ? "Preço não informado" : formatoPreco.format(Number(produto.preco))),
+        criarDataAtualizacao(produto),
     );
     const acoes = elemento("div", "home-destaque-acoes", "");
     const caminho = caminhoDetalhes(produto);
@@ -111,6 +121,7 @@ function criarCard(produto, titulo = "h2") {
         nome,
         elemento("p", "preco", preco !== null && Number.isFinite(preco)
             ? formatoPreco.format(preco) : "Preço não informado"),
+        criarDataAtualizacao(produto),
         elemento("p", `estoque${produto.disponivel ? " disponivel" : ""}`,
             produto.disponivel ? "Disponível na última coleta" : "Indisponível na última coleta")
     );

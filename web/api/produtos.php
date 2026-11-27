@@ -18,7 +18,7 @@ try {
     $banco = conectarBanco();
     $consulta = $banco->prepare(
         'SELECT v.ID, v.NOME, v.LOJA, v.CATEGORIA, v.PRECO_ATUAL, v.PRECO_ORIGINAL, v.DESCONTO_PCT, v.PRECO_REFERENCIA, v.ORIGEM_REFERENCIA, '
-        . 'p.URL_ORIGINAL, v.URL_AFILIADO '
+        . "p.URL_ORIGINAL, v.URL_AFILIADO, TO_CHAR(p.VISTO_EM, 'YYYY-MM-DD HH24:MI:SS') AS VISTO_EM "
         . 'FROM V_PROMOCOES_ATIVAS v JOIN PRODUTO p ON p.ID = v.ID '
         . 'JOIN LOJA l ON l.ID = p.LOJA_ID WHERE l.ATIVA = 1 '
         . ($categoria === '' ? '' : 'AND v.CATEGORIA = :categoria ')
@@ -39,6 +39,7 @@ try {
             'desconto_pct' => (int) $linha['DESCONTO_PCT'],
             'disponivel' => true, 'url' => $linha['URL_ORIGINAL'],
             'url_afiliado' => $linha['URL_AFILIADO'],
+            'visto_em' => $linha['VISTO_EM'],
         ];
     }
     echo json_encode(['produtos' => $produtos], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);

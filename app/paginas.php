@@ -33,10 +33,12 @@ abrirPagina($titulos[$caminho], $caminho, $scripts);
         </div>
     </div>
     <h2 id="total-ofertas" aria-live="polite">Ofertas</h2>
+    <p class="aviso-preco">O preço pode ter mudado na loja.</p>
     <div id="estado" class="mensagem" role="status">Carregando ofertas…</div>
     <div id="produtos" class="produtos"></div>
 <?php elseif ($caminho === '/favoritos'): ?>
     <h1>Favoritos e alertas</h1>
+    <p class="aviso-preco">O preço pode ter mudado na loja.</p>
     <p id="estado-favoritos" role="status">Carregando favoritos…</p>
     <div id="favoritos-lista"></div>
 <?php elseif ($caminho === '/sobre'): ?>

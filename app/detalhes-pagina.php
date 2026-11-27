@@ -5,6 +5,7 @@
     <section id="comparar-lojas" class="painel-claro" hidden>
         <h2>Comparar lojas</h2>
         <div id="oferta-loja"></div>
+        <p class="aviso-preco">O preço pode ter mudado na loja.</p>
     </section>
     <section id="historico" class="mensagem historico painel-claro" hidden>
         <h2>Histórico de preços</h2>

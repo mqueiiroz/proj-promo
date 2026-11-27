@@ -93,7 +93,7 @@ function organizarDetalhes(card, produto, id) {
     const loja = document.getElementById("oferta-loja");
     const dados = elemento("div", "loja-dados", "");
     dados.append(elemento("strong", "", produto.loja));
-    for (const seletor of [".preco", ".comparacao", ".estoque"]) {
+    for (const seletor of [".preco", ".data-atualizacao", ".comparacao", ".estoque"]) {
         const campo = card.querySelector(seletor);
         if (campo) dados.append(campo);
     }
